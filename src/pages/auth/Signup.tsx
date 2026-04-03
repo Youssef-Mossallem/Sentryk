@@ -14,7 +14,7 @@ export default function Signup() {
   const navigate = useNavigate();
   
   // إعداد رابط الـ API بشكل مباشر لضمان عدم حدوث خطأ في التعريف
- const API_BASE_URL = import.meta.env.VITE_API_URL || "https://sentrykapi-86unvpa1.b4a.run"; // قم بتغييره لرابط سيرفرك الحقيقي عند الرفع
+ const API_BASE_URL = "https://sentrykapi-86unvpa1.b4a.run"; // قم بتغييره لرابط سيرفرك الحقيقي عند الرفع
 
   // States
   const [showPassword, setShowPassword] = useState(false);
