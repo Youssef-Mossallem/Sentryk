@@ -1,0 +1,246 @@
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  AlertCircle,
+  CheckCircle2,
+  ChevronLeft,
+  Clock,
+  Hash,
+  Headset,
+  Mail,
+  Moon,
+  Send,
+  Sun,
+  User,
+  Zap
+} from 'lucide-react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useThemeStore } from '../../store/useThemeStore';
+
+export default function Contact() {
+  const { darkMode, toggleTheme } = useThemeStore();
+  
+  // States للمدخلات والحالة
+  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('loading');
+
+    try {
+      const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          service_id: "service_pjcokij",
+          template_id: "template_c1dnj9m",
+          user_id: "EjARs5yaDNybll9Ov",
+          template_params: {
+            from_name: formData.name,
+            from_email: formData.email,
+            subject: formData.subject,
+            message: formData.message,
+            to_email: "ahmadmoslem35@gmail.com",
+          },
+        }),
+      });
+
+      if (response.ok) {
+        setStatus('success');
+        setFormData({ name: '', email: '', subject: '', message: '' });
+        setTimeout(() => setStatus('idle'), 5000);
+      } else {
+        throw new Error();
+      }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (err) {
+      setStatus('error');
+      setTimeout(() => setStatus('idle'), 5000);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-[#030712] transition-colors duration-700 text-right overflow-x-hidden" dir="rtl">
+      
+      {/* --- Navbar --- */}
+      <nav className="fixed top-0 w-full z-50 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 bg-white/40 dark:bg-[#030712]/40">
+        <div className="max-w-7xl mx-auto px-8 h-20 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+              <Zap size={22} fill="currentColor" />
+            </div>
+            <span className="text-2xl font-black tracking-tighter dark:text-white uppercase">SENTRYK</span>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <button onClick={toggleTheme} className="p-2.5 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all">
+              {darkMode ? <Sun size={20} className="text-amber-400" /> : <Moon size={20} className="text-slate-600" />}
+            </button>
+            <Link to="/" className="text-lg font-bold text-slate-800 dark:text-white hover:text-primary-600 transition-colors flex items-center gap-2 group">
+              <span>الرئيسية</span>
+              <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      <section className="pt-44 pb-20 px-6">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-start">
+          
+          {/* --- Left Side: Information --- */}
+          <motion.div 
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-12"
+          >
+            <div>
+              <h1 className="text-5xl md:text-6xl font-black dark:text-white mb-8 leading-tight">
+                لنصنع <span className="text-primary-600 italic">التغيير</span> معاً
+              </h1>
+              <p className="text-xl text-slate-600 dark:text-slate-400 font-medium leading-relaxed max-w-lg">
+                فريق "سنتريك" الاستشاري مستعد للإجابة على كافة استفساراتكم التقنية والإدارية. تواصلكم معنا هو الخطوة الأولى نحو منظومة خالية من الفوضى.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              {[
+                { icon: <Headset className="text-primary-600" />, title: "دعم فني مباشر", desc: "متاحون على مدار الساعة لخدمتكم" },
+                { icon: <Mail className="text-primary-600" />, title: "المراسلات الرسمية", desc: "ahmadmoslem35@gmail.com" },
+                { icon: <Clock className="text-primary-600" />, title: "وقت الاستجابة", desc: "عادة ما نرد في أقل من ساعتين" }
+              ].map((item, i) => (
+                <div key={i} className="flex gap-5 items-center p-6 rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                  <div className="w-14 h-14 bg-primary-600/5 rounded-2xl flex items-center justify-center shrink-0">
+                    {item.icon}
+                  </div>
+                  <div>
+                    <h4 className="font-black dark:text-white text-lg">{item.title}</h4>
+                    <p className="text-slate-500 dark:text-slate-400 font-bold text-sm">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* --- Right Side: Contact Form --- */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative"
+          >
+            <div className="p-8 md:p-12 rounded-[3.5rem] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none relative z-10">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-black dark:text-slate-300 pr-2">الاسم </label>
+                    <div className="relative group">
+                      <User className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={18} />
+                      <input 
+                        required
+                        type="text" 
+                        placeholder="أحمد محمد"
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 pr-12 pl-4 outline-none focus:border-primary-600 dark:focus:border-primary-600 transition-all font-bold dark:text-white"
+                        value={formData.name}
+                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-black dark:text-slate-300 pr-2">البريد الإلكتروني</label>
+                    <div className="relative group">
+                      <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={18} />
+                      <input 
+                        required
+                        type="email" 
+                        placeholder="name@example.com"
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 pr-12 pl-4 outline-none focus:border-primary-600 dark:focus:border-primary-600 transition-all font-bold dark:text-white text-left"
+                        value={formData.email}
+                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-black dark:text-slate-300 pr-2">موضوع الرسالة</label>
+                  <div className="relative group">
+                    <Hash className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={18} />
+                    <input 
+                      required
+                      type="text" 
+                      placeholder="استفسار عن باقة البرو"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 pr-12 pl-4 outline-none focus:border-primary-600 dark:focus:border-primary-600 transition-all font-bold dark:text-white"
+                      value={formData.subject}
+                      onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-black dark:text-slate-300 pr-2">رسالتك</label>
+                  <textarea 
+                    required
+                    rows={5}
+                    placeholder="اكتب لنا استفسارك بكل وضوح..."
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[2rem] py-4 px-6 outline-none focus:border-primary-600 dark:focus:border-primary-600 transition-all font-bold dark:text-white resize-none"
+                    value={formData.message}
+                    onChange={(e) => setFormData({...formData, message: e.target.value})}
+                  ></textarea>
+                </div>
+
+                <button 
+                  disabled={status === 'loading'}
+                  className="w-full py-5 bg-primary-600 text-white rounded-2xl font-black text-xl shadow-xl shadow-primary-600/20 hover:bg-primary-700 transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed group overflow-hidden"
+                >
+                  <AnimatePresence mode="wait">
+                    {status === 'loading' ? (
+                      <motion.div 
+                        key="loading" 
+                        initial={{ y: 20 }} animate={{ y: 0 }} exit={{ y: -20 }}
+                        className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"
+                      />
+                    ) : (
+                      <motion.div 
+                        key="idle" 
+                        initial={{ y: 20 }} animate={{ y: 0 }} exit={{ y: -20 }}
+                        className="flex items-center gap-3"
+                      >
+                        <span>إرسال الطلب الآن</span>
+                        <Send size={20} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </button>
+
+                {/* Status Messages */}
+                <AnimatePresence>
+                  {status === 'success' && (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="p-4 bg-green-500/10 border border-green-500/20 text-green-600 rounded-xl flex items-center gap-3 font-bold text-sm">
+                      <CheckCircle2 size={18} /> تم إرسال رسالتك بنجاح، فريقنا سيتواصل معك قريباً.
+                    </motion.div>
+                  )}
+                  {status === 'error' && (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="p-4 bg-red-500/10 border border-red-500/20 text-red-600 rounded-xl flex items-center gap-3 font-bold text-sm">
+                      <AlertCircle size={18} /> حدث خطأ أثناء الإرسال، يرجى المحاولة مرة أخرى.
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </form>
+            </div>
+            
+            {/* Background Accent */}
+            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-primary-600/10 rounded-full blur-3xl -z-10 animate-pulse"></div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* --- Simple Footer Label --- */}
+      <div className="text-center py-10 opacity-30">
+        <p className="text-xs font-black dark:text-white tracking-[0.4em] uppercase">Sentryk Communication Hub • 2026</p>
+      </div>
+
+    </div>
+  );
+}
