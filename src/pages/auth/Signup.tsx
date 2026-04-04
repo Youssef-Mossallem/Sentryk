@@ -4,17 +4,15 @@ import {
   Zap, User, Mail, Lock, Phone, 
   Building2, ChevronLeft, Eye, EyeOff, 
   CheckCircle2, AlertCircle, Loader2, ArrowRight,
-  Sun, Moon
+  Sun, Moon, XCircle
 } from 'lucide-react';
 import { useThemeStore } from '../../store/useThemeStore';
 import { Link, useNavigate } from 'react-router-dom';
+import api from "../../api/axios"; // استيراد الأكسيوس كما طلبت
 
 export default function Signup() {
   const { darkMode, toggleTheme } = useThemeStore();
   const navigate = useNavigate();
-  
-  // إعداد رابط الـ API بشكل مباشر لضمان عدم حدوث خطأ في التعريف
- const API_BASE_URL = "https://sentrykapi-l4vi8x0h.b4a.run/"; // قم بتغييره لرابط سيرفرك الحقيقي عند الرفع
 
   // States
   const [showPassword, setShowPassword] = useState(false);
@@ -29,34 +27,47 @@ export default function Signup() {
     password: ''
   });
 
+  // دوال التحقق (Validation Logic)
+  const isPasswordStrong = (pass: string) => {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return regex.test(pass);
+  };
+
+  const isPhoneValid = (phone: string) => {
+    return phone.length === 11 && /^[0-9]+$/.test(phone);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
+    // التحقق من رقم الهاتف
+    if (!isPhoneValid(formData.phone)) {
+      setError('يجب أن يتكون رقم الهاتف من 11 رقم فقط');
+      return;
+    }
+
+    // التحقق من قوة كلمة المرور
+    if (!isPasswordStrong(formData.password)) {
+      setError('كلمة المرور لا تستوفي الشروط الأمنية المطلوبة');
+      return;
+    }
+
     if (!agreed) return;
     
     setLoading(true);
-    setError('');
 
     try {
-      // استخدام الرابط المباشر المتوافق مع راوت السيرفر (POST /api/auth/signup)
-      const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
+      // استخدام api.post مباشرة (الرابط الأساسي معرف في axios.js)
+      const response = await api.post('/auth/signup', formData);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'حدث خطأ ما أثناء إنشاء الحساب');
-      }
-
-      // حفظ التوكن
-      localStorage.setItem('token', data.token);
+      // حفظ التوكن في LocalStorage
+      localStorage.setItem('token', response.data.token);
       
-      // التوجيه للخطط
+      // التوجيه لصفحة الخطط
       navigate('/plans');
     } catch (err: any) {
-      setError(err.message);
+      setError(err.response?.data?.error || 'حدث خطأ ما أثناء إنشاء الحساب');
     } finally {
       setLoading(false);
     }
@@ -66,15 +77,16 @@ export default function Signup() {
     <div className={`min-h-screen ${darkMode ? 'dark' : ''} transition-colors duration-700`} dir="rtl">
       <div className="min-h-screen bg-slate-50 dark:bg-[#030712] flex flex-col lg:flex-row overflow-hidden text-right">
         
-        {/* --- زر تبديل الوضع (Dark/Light) --- */}
+        {/* زر تبديل الوضع */}
         <button 
+          type="button"
           onClick={toggleTheme}
           className="fixed top-6 left-6 z-50 p-3 rounded-full bg-white/10 backdrop-blur-md border border-slate-200 dark:border-slate-800 shadow-xl hover:scale-110 transition-all"
         >
           {darkMode ? <Sun size={20} className="text-amber-400" /> : <Moon size={20} className="text-primary-600" />}
         </button>
 
-        {/* --- الجانب الأيسر: عرض جمالي (Desktop Only) --- */}
+        {/* الجانب الأيسر (Desktop Only) */}
         <motion.div 
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -97,17 +109,15 @@ export default function Signup() {
               ))}
             </div>
           </div>
-          <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-slate-900/10 rounded-full blur-3xl"></div>
         </motion.div>
 
-        {/* --- الجانب الأيمن: الفورم (Main Content) --- */}
+        {/* الجانب الأيمن (Form) */}
         <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 relative">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="w-full max-w-md space-y-8"
           >
-            {/* Logo & Header */}
             <div className="text-center lg:text-right space-y-2">
               <Link to="/" className="inline-flex items-center gap-2 text-primary-600 font-black mb-4 group">
                 <ChevronLeft size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -117,12 +127,11 @@ export default function Signup() {
               <p className="text-slate-500 dark:text-slate-400 font-bold">قم بإدخال بياناتك وبيانات السنتر للبدء</p>
             </div>
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-5">
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-sm font-black pr-2 dark:text-slate-300">اسم السنتر/الأكاديمية</label>
+                  <label className="text-sm font-black pr-2 dark:text-slate-300">اسم السنتر</label>
                   <div className="relative group">
                     <Building2 className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={18} />
                     <input 
@@ -136,14 +145,15 @@ export default function Signup() {
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-black pr-2 dark:text-slate-300">رقم الهاتف</label>
-                  <div className="relative group text-left">
+                  <label className="text-sm font-black pr-2 dark:text-slate-300">رقم الهاتف (11 رقم)</label>
+                  <div className="relative group">
                     <Phone className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={18} />
                     <input 
                       required
                       type="tel" 
+                      maxLength={11}
                       className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pr-12 pl-4 outline-none focus:border-primary-600 transition-all font-bold dark:text-white text-left shadow-sm"
-                      placeholder="010xxxxxxx"
+                      placeholder="010XXXXXXXX"
                       value={formData.phone}
                       onChange={(e) => setFormData({...formData, phone: e.target.value})}
                     />
@@ -182,7 +192,7 @@ export default function Signup() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-black pr-2 dark:text-slate-300">كلمة المرور (8 أحرف +)</label>
+                <label className="text-sm font-black pr-2 dark:text-slate-300">كلمة المرور</label>
                 <div className="relative group">
                   <Lock className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={18} />
                   <button 
@@ -201,9 +211,23 @@ export default function Signup() {
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
                   />
                 </div>
+                {/* متطلبات كلمة المرور الموضحة بصرياً */}
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-3 px-2">
+                  <div className={`flex items-center gap-2 text-[10px] font-bold ${/[A-Z]/.test(formData.password) ? 'text-green-500' : 'text-slate-400'}`}>
+                    {/[A-Z]/.test(formData.password) ? <CheckCircle2 size={12}/> : <XCircle size={12}/>} حرف كبير
+                  </div>
+                  <div className={`flex items-center gap-2 text-[10px] font-bold ${/[a-z]/.test(formData.password) ? 'text-green-500' : 'text-slate-400'}`}>
+                    {/[a-z]/.test(formData.password) ? <CheckCircle2 size={12}/> : <XCircle size={12}/>} حرف صغير
+                  </div>
+                  <div className={`flex items-center gap-2 text-[10px] font-bold ${/\d/.test(formData.password) ? 'text-green-500' : 'text-slate-400'}`}>
+                    {/\d/.test(formData.password) ? <CheckCircle2 size={12}/> : <XCircle size={12}/>} أرقام
+                  </div>
+                  <div className={`flex items-center gap-2 text-[10px] font-bold ${/[@$!%*?&]/.test(formData.password) ? 'text-green-500' : 'text-slate-400'}`}>
+                    {/[@$!%*?&]/.test(formData.password) ? <CheckCircle2 size={12}/> : <XCircle size={12}/>} رمز خاص
+                  </div>
+                </div>
               </div>
 
-              {/* Checkbox Policy */}
               <div className="flex items-center gap-3 px-2">
                 <input 
                   type="checkbox" 
@@ -213,11 +237,10 @@ export default function Signup() {
                   className="w-5 h-5 accent-primary-600 cursor-pointer rounded-lg"
                 />
                 <label htmlFor="policy" className="text-sm font-bold text-slate-600 dark:text-slate-400 cursor-pointer select-none">
-                  أوافق على <Link to="/policy" className="text-primary-600 hover:underline">شروط الاستخدام وسياسة الخصوصية</Link>
+                  أوافق على <Link to="/policy" className="text-primary-600 hover:underline">شروط الاستخدام</Link>
                 </label>
               </div>
 
-              {/* Error Message */}
               <AnimatePresence>
                 {error && (
                   <motion.div 
@@ -230,10 +253,9 @@ export default function Signup() {
                 )}
               </AnimatePresence>
 
-              {/* Submit Button */}
               <button 
                 disabled={loading || !agreed}
-                className="w-full py-5 bg-primary-600 text-white rounded-[1.5rem] font-black text-xl shadow-xl shadow-primary-600/20 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 group overflow-hidden"
+                className="w-full py-5 bg-primary-600 text-white rounded-[1.5rem] font-black text-xl shadow-xl shadow-primary-600/20 hover:bg-primary-700 disabled:opacity-50 transition-all flex items-center justify-center gap-3 group"
               >
                 {loading ? <Loader2 className="animate-spin" /> : (
                   <div className="flex items-center gap-3">
