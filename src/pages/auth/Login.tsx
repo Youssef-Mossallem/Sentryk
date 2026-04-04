@@ -23,7 +23,7 @@ export default function Login() {
   const navigate = useNavigate();
   
   // قراءة الرابط من .env أو الافتراضي 3000
-  const API_BASE_URL = import."https://sentrykapi-86unvpa1.b4a.run";
+  const API_BASE_URL = "https://sentrykapi-86unvpa1.b4a.run";
 
   // States
   const [showPassword, setShowPassword] = useState(false);
