@@ -1,0 +1,37 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- الخلفية الدائرية (اختيارية، يمكنك إزالتها لو تفضل الشعار شفاف تماماً) -->
+  <rect width="512" height="512" rx="120" fill="#030712"/>
+  
+  <!-- التدرج اللوني الأسطوري -->
+  <defs>
+    <linearGradient id="sentryk_grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" /> <!-- Indigo -->
+      <stop offset="100%" stop-color="#0ea5e9" /> <!-- Sky Blue -->
+    </linearGradient>
+    
+    <!-- ظل خفيف لإعطاء عمق -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <blur stdDeviation="15" />
+    </filter>
+  </defs>
+
+  <!-- جسم الشعار الرئيسي (حرف S مدمج مع شكل درع تعليمي) -->
+  <g transform="translate(106, 106) scale(1.2)">
+    <path 
+      d="M125 20C125 20 50 40 50 110C50 180 200 160 200 230C200 300 125 320 125 320" 
+      stroke="url(#sentryk_grad)" 
+      stroke-width="40" 
+      stroke-linecap="round" 
+      stroke-linejoin="round"
+    />
+    
+    <!-- نقطة الـ "Smart Core" تعبر عن الذكاء الاصطناعي أو المركزية -->
+    <circle cx="125" cy="170" r="25" fill="white" fill-opacity="0.9">
+        <animate attributeName="fill-opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite" />
+    </circle>
+
+    <!-- خطوط إضافية توحي بالبيانات والتنظيم -->
+    <path d="M180 60L210 30" stroke="white" stroke-width="12" stroke-linecap="round" opacity="0.3" />
+    <path d="M40 280L70 250" stroke="white" stroke-width="12" stroke-linecap="round" opacity="0.3" />
+  </g>
+</svg>
