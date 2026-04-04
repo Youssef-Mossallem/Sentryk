@@ -12,7 +12,8 @@ import {
   UserPlus,
   Users,
   Menu,
-  X
+  X,
+  PhoneCall // أيقونة لصفحة تواصل معنا
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -25,6 +26,7 @@ const menuItems = [
   { icon: <UserPlus size={20} />, label: ' المستخدمين', path: '/users', roles: ['ADMIN'] },
   { icon: <MessageSquare size={20} />, label: 'محفظة SMS', path: '/sms-wallet', roles: ['ADMIN'] },
   { icon: <History size={20} />, label: 'سجل النشاط', path: '/activity-log', roles: ['ADMIN'] },
+  { icon: <PhoneCall size={20} />, label: 'تواصل معنا', path: '/contact', roles: ['ADMIN', 'SECRETARY'] }, // الإضافة الجديدة
 ];
 
 export default function Sidebar() {
@@ -33,20 +35,22 @@ export default function Sidebar() {
   const user = useAuthStore((state) => state.user);
   const userRole = user?.role || 'SECRETARY';
   
+  // حالة فتح وإغلاق المنيو في الموبايل
   const [isOpen, setIsOpen] = useState(false);
 
+  // إغلاق المنيو تلقائياً عند تغيير الصفحة
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname]);
 
-  // مكون محتوى السايد بار
+  // مكون محتوى السايد بار (مفصول لإعادة استخدامه)
   const SidebarContent = () => (
     <>
       {/* الشعار - تم استبدال Zap بـ favicon.svg */}
       <div className="p-8 flex items-center gap-4">
         <motion.div 
-          whileHover={{ rotate: 15, scale: 1.1 }}
-          className="w-12 h-12 bg-slate-900 dark:bg-primary-600/10 rounded-2xl flex items-center justify-center shadow-xl shadow-primary-600/10 border border-slate-200 dark:border-primary-500/20 overflow-hidden"
+          whileHover={{ rotate: 15 }}
+          className="w-12 h-12 bg-primary-600 rounded-2xl flex items-center justify-center shadow-xl shadow-primary-600/30 overflow-hidden"
         >
           <img src="/favicon.svg" alt="Sentryk Logo" className="w-8 h-8 object-contain" />
         </motion.div>
@@ -112,11 +116,11 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* 1. شكل الناف بار في الموبايل */}
+      {/* 1. شكل الناف بار في الموبايل - تم استبدال Zap بـ favicon.svg */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-[60] bg-white/80 dark:bg-[#020617]/80 backdrop-blur-lg border-b border-slate-200 dark:border-slate-800/50 px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-slate-900 dark:bg-primary-600/20 rounded-xl flex items-center justify-center border border-slate-200 dark:border-primary-500/20 overflow-hidden">
-                <img src="/favicon.svg" alt="Sentryk Logo" className="w-6 h-6 object-contain" />
+            <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center overflow-hidden">
+                <img src="/favicon.svg" alt="Logo" className="w-6 h-6 object-contain" />
             </div>
             <h1 className="text-xl font-black dark:text-white">SENTRYK</h1>
         </div>
@@ -129,7 +133,7 @@ export default function Sidebar() {
         </button>
       </div>
 
-      {/* 2. السايد بار العادي (الديسك توب) */}
+      {/* 2. السايد بار العادي (للديسك توب) */}
       <aside className="w-72 h-screen hidden lg:flex flex-col bg-white dark:bg-[#020617] border-l border-slate-200 dark:border-slate-800/50 sticky top-0 z-50">
         <SidebarContent />
       </aside>
@@ -138,6 +142,7 @@ export default function Sidebar() {
       <AnimatePresence>
         {isOpen && (
           <>
+            {/* الخلفية المظلمة */}
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -146,6 +151,7 @@ export default function Sidebar() {
               className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] lg:hidden"
             />
             
+            {/* القائمة الجانبية */}
             <motion.aside
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
@@ -153,6 +159,7 @@ export default function Sidebar() {
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className="fixed top-0 right-0 w-[85%] max-w-sm h-full bg-white dark:bg-[#020617] z-[80] shadow-2xl flex flex-col lg:hidden"
             >
+              {/* زر الإغلاق داخل المنيو */}
               <div className="absolute left-4 top-6">
                  <button 
                     onClick={() => setIsOpen(false)}
