@@ -10,7 +10,6 @@ import {
   RefreshCw,
   Save,
   Settings,
-  Share2,
   ShieldAlert,
   Trash2
 } from 'lucide-react';
@@ -212,7 +211,7 @@ export default function CenterSettings() {
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               className="p-10 space-y-10"
             >
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="max-w-2xl">
                 <div className="p-10 rounded-[2.5rem] bg-gradient-to-br from-indigo-600 to-primary-700 text-white relative overflow-hidden shadow-2xl shadow-primary-500/20">
                   <Award className="absolute -bottom-10 -left-10 w-48 h-48 text-white/10 -rotate-12" />
                   <div className="relative z-10">
@@ -220,33 +219,6 @@ export default function CenterSettings() {
                     <h3 className="text-4xl font-black mt-4 mb-8 tracking-tight">{center?.plan || 'Standard'}</h3>
                     <div className="flex items-center gap-3 text-sm font-bold bg-black/10 w-fit px-5 py-2.5 rounded-2xl backdrop-blur-md border border-white/10">
                       <CheckCircle2 size={18} className="text-emerald-400" /> اشتراكك ساري المفعول
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-10 rounded-[2.5rem] bg-slate-50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 flex flex-col justify-between">
-                  <div className="flex justify-between items-start">
-                    <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl text-primary-600 shadow-sm border border-slate-50 dark:border-slate-800">
-                      <Share2 size={24} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-xs font-black text-slate-400 mb-1 uppercase">Total Referrals</p>
-                      <p className="text-3xl font-black dark:text-white tracking-tighter">{center?.referralCount || 0}</p>
-                    </div>
-                  </div>
-                  <div className="mt-8">
-                    <p className="text-xs font-black text-slate-500 mb-3 flex items-center gap-2">كود الإحالة الخاص بك <Info size={14}/></p>
-                    <div 
-                      onClick={() => {
-                        if (center?.referralCode) {
-                          navigator.clipboard.writeText(center.referralCode);
-                          toast.success("تم نسخ الكود");
-                        }
-                      }}
-                      className="group flex items-center justify-between p-5 bg-white dark:bg-slate-950 rounded-[1.5rem] border-2 border-dashed border-slate-200 dark:border-slate-700 cursor-pointer hover:border-primary-500 transition-all"
-                    >
-                      <span className="font-mono text-xl font-black text-primary-600 tracking-[0.3em]">{center?.referralCode || '------'}</span>
-                      <span className="text-[10px] font-black text-slate-300 group-hover:text-primary-500">اضغط للنسخ</span>
                     </div>
                   </div>
                 </div>
