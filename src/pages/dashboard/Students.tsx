@@ -693,17 +693,36 @@ export default function StudentsPage() {
       dir="rtl"
     >
           {/* SMS INFO */}
-    <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 p-4 rounded-2xl text-sm text-blue-800 dark:text-blue-300 font-bold leading-relaxed">
-      يتم إرسال رسائل <span className="font-black">SMS</span> تلقائيًا لولي أمر
-      الطالب المسجل رقمه في النظام في الحالات التالية:
-      عند إضافة الطالب لأول مرة، عند تجديد الاشتراك، قبل انتهاء الاشتراك
-      بثلاثة أيام، وعند انتهاء الاشتراك.
-      <br />
-      في حال عدم توفر رصيد كافٍ في المحفظة لن يتم إرسال الرسائل.
-      يتم احتساب الرسائل حسب بيانات الطالب حيث أن كل
-      <span className="font-black"> 60 حرفًا </span>
-      تُحسب كرسالة SMS واحدة.
-    </div>
+   {/* SMS INFO */}
+<div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 p-5 rounded-2xl text-sm text-blue-900 dark:text-blue-300 font-bold leading-relaxed">
+  
+  يتم إرسال رسائل <span className="font-black">SMS</span> تلقائيًا إلى رقم ولي
+  أمر الطالب المسجل في النظام في الحالات التالية:
+  عند إضافة الطالب لأول مرة، عند تجديد الاشتراك، قبل انتهاء الاشتراك
+  بثلاثة أيام، وعند انتهاء الاشتراك.
+
+  <br /><br />
+
+  يختلف نص الرسالة حسب الحالة
+  <span className="font-black"> (إضافة – تجديد – قرب الانتهاء – انتهاء)</span>،
+  ولكنها تحتوي دائمًا على بيانات الطالب الأساسية مثل:
+  اسم الطالب، المواد المشترك بها (إن وجدت)، تاريخ انتهاء الاشتراك،
+  سعر كل مادة، والسعر الإجمالي للاشتراك.
+
+  <br /><br />
+
+  في حال عدم اشتراك الطالب في أي مادة فلن يتم عرض قائمة المواد في الرسالة.
+
+  <br /><br />
+
+  في حالة عدم توفر رصيد كافٍ في محفظة الرسائل لن يتم إرسال الرسالة.
+
+  <br /><br />
+
+  يتم احتساب الرسائل بناءً على طول النص، حيث أن كل
+  <span className="font-black"> 60 حرفًا </span>
+  تُحسب كرسالة SMS واحدة.
+</div>
       <AnimatePresence>
         {priceToast.show && (
           <PriceToast
