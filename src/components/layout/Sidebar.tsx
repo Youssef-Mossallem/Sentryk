@@ -13,10 +13,13 @@ import {
   Users,
   Menu,
   X,
-  PhoneCall // أيقونة لصفحة تواصل معنا
+  PhoneCall,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useThemeStore } from '../../store/useThemeStore';
 
 const menuItems = [
   { icon: <LayoutDashboard size={20} />, label: 'لوحة التحكم', path: '/dashboard', roles: ['ADMIN'] },
@@ -26,27 +29,25 @@ const menuItems = [
   { icon: <UserPlus size={20} />, label: ' المستخدمين', path: '/users', roles: ['ADMIN'] },
   { icon: <MessageSquare size={20} />, label: 'محفظة SMS', path: '/sms-wallet', roles: ['ADMIN'] },
   { icon: <History size={20} />, label: 'سجل النشاط', path: '/activity-log', roles: ['ADMIN'] },
-  { icon: <PhoneCall size={20} />, label: 'تواصل معنا', path: '/contact-dash', roles: ['ADMIN', 'SECRETARY'] }, // الإضافة الجديدة
+  { icon: <PhoneCall size={20} />, label: 'تواصل معنا', path: '/contact-dash', roles: ['ADMIN', 'SECRETARY'] },
 ];
 
 export default function Sidebar() {
   const location = useLocation();
+  const { darkMode, toggleTheme } = useThemeStore();
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
   const userRole = user?.role || 'SECRETARY';
   
-  // حالة فتح وإغلاق المنيو في الموبايل
   const [isOpen, setIsOpen] = useState(false);
 
-  // إغلاق المنيو تلقائياً عند تغيير الصفحة
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname]);
 
-  // مكون محتوى السايد بار (مفصول لإعادة استخدامه)
+  // مكون محتوى السايد بار المشترك
   const SidebarContent = () => (
     <>
-      {/* الشعار - تم استبدال Zap بـ favicon.svg */}
       <div className="p-8 flex items-center gap-4">
         <motion.div 
           whileHover={{ rotate: 15 }}
@@ -60,7 +61,6 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* الروابط */}
       <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto custom-scrollbar">
         <p className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">القائمة الرئيسية</p>
         {menuItems.map((item) => {
@@ -92,8 +92,16 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* الجزء السفلي */}
       <div className="p-6 mt-auto space-y-2">
+        {/* زر تبديل الوضع داخل السايد بار (اختياري إضافي) */}
+        <button 
+          onClick={toggleTheme}
+          className="flex lg:hidden items-center gap-4 px-4 py-4 w-full rounded-2xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900/50 transition-all"
+        >
+          {darkMode ? <Sun size={20} className="text-amber-400" /> : <Moon size={20} />}
+          {darkMode ? 'الوضع النهاري' : 'الوضع الليلي'}
+        </button>
+
         {userRole === 'ADMIN' && (
           <Link 
             to="/settings"
@@ -116,7 +124,7 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* 1. شكل الناف بار في الموبايل - تم استبدال Zap بـ favicon.svg */}
+      {/* 1. ناف بار الموبايل العلوي (تمت إضافة زر الثيم هنا) */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-[60] bg-white/80 dark:bg-[#020617]/80 backdrop-blur-lg border-b border-slate-200 dark:border-slate-800/50 px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center overflow-hidden">
@@ -125,24 +133,34 @@ export default function Sidebar() {
             <h1 className="text-xl font-black dark:text-white">SENTRYK</h1>
         </div>
         
-        <button 
-            onClick={() => setIsOpen(true)}
-            className="p-2 bg-slate-100 dark:bg-slate-900 rounded-xl text-slate-600 dark:text-slate-300"
-        >
-            <Menu size={24} />
-        </button>
+        <div className="flex items-center gap-2">
+          {/* زر الدارك مود للموبايل */}
+          <button 
+            onClick={toggleTheme}
+            className="p-2.5 bg-slate-100 dark:bg-slate-900 rounded-xl text-slate-600 dark:text-slate-300 transition-colors"
+          >
+            {darkMode ? <Sun size={20} className="text-amber-400" /> : <Moon size={20} />}
+          </button>
+
+          {/* زر المنيو */}
+          <button 
+              onClick={() => setIsOpen(true)}
+              className="p-2.5 bg-slate-100 dark:bg-slate-900 rounded-xl text-slate-600 dark:text-slate-300"
+          >
+              <Menu size={24} />
+          </button>
+        </div>
       </div>
 
-      {/* 2. السايد بار العادي (للديسك توب) */}
+      {/* 2. السايد بار للديسك توب */}
       <aside className="w-72 h-screen hidden lg:flex flex-col bg-white dark:bg-[#020617] border-l border-slate-200 dark:border-slate-800/50 sticky top-0 z-50">
         <SidebarContent />
       </aside>
 
-      {/* 3. المنيو المتحرك للموبايل (Drawer) */}
+      {/* 3. دراور الموبايل (Drawer) */}
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* الخلفية المظلمة */}
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -151,7 +169,6 @@ export default function Sidebar() {
               className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] lg:hidden"
             />
             
-            {/* القائمة الجانبية */}
             <motion.aside
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
@@ -159,7 +176,6 @@ export default function Sidebar() {
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className="fixed top-0 right-0 w-[85%] max-w-sm h-full bg-white dark:bg-[#020617] z-[80] shadow-2xl flex flex-col lg:hidden"
             >
-              {/* زر الإغلاق داخل المنيو */}
               <div className="absolute left-4 top-6">
                  <button 
                     onClick={() => setIsOpen(false)}
