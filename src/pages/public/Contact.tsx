@@ -10,8 +10,7 @@ import {
   Moon,
   Send,
   Sun,
-  User,
-  Zap
+  User
 } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -53,7 +52,6 @@ export default function Contact() {
       } else {
         throw new Error();
       }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       setStatus('error');
       setTimeout(() => setStatus('idle'), 5000);
@@ -67,10 +65,14 @@ export default function Contact() {
       <nav className="fixed top-0 w-full z-50 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 bg-white/40 dark:bg-[#030712]/40">
         <div className="max-w-7xl mx-auto px-8 h-20 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-              <Zap size={22} fill="currentColor" />
+            {/* تحسين شكل اللوجو */}
+            <div className="relative group">
+              <div className="absolute inset-0 bg-primary-500/20 blur-lg rounded-xl group-hover:bg-primary-500/40 transition-all"></div>
+              <div className="relative w-11 h-11 bg-primary-600 rounded-xl flex items-center justify-center shadow-xl shadow-primary-600/30 overflow-hidden border border-white/10">
+                <img src="/favicon.svg" alt="Sentryk Logo" className="w-7 h-7 object-contain" />
+              </div>
             </div>
-            <span className="text-2xl font-black tracking-tighter dark:text-white uppercase">SENTRYK</span>
+            <span className="text-2xl font-black tracking-tighter dark:text-white uppercase font-display">SENTRYK</span>
           </div>
 
           <div className="flex items-center gap-6">
@@ -95,7 +97,7 @@ export default function Contact() {
             className="space-y-12"
           >
             <div>
-              <h1 className="text-5xl md:text-6xl font-black dark:text-white mb-8 leading-tight">
+              <h1 className="text-5xl md:text-6xl font-black dark:text-white mb-8 leading-tight font-display">
                 لنصنع <span className="text-primary-600 italic">التغيير</span> معاً
               </h1>
               <p className="text-xl text-slate-600 dark:text-slate-400 font-medium leading-relaxed max-w-lg">
@@ -109,7 +111,7 @@ export default function Contact() {
                 { icon: <Mail className="text-primary-600" />, title: "المراسلات الرسمية", desc: "ahmadmoslem35@gmail.com" },
                 { icon: <Clock className="text-primary-600" />, title: "وقت الاستجابة", desc: "عادة ما نرد في أقل من ساعتين" }
               ].map((item, i) => (
-                <div key={i} className="flex gap-5 items-center p-6 rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <div key={i} className="flex gap-5 items-center p-6 rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
                   <div className="w-14 h-14 bg-primary-600/5 rounded-2xl flex items-center justify-center shrink-0">
                     {item.icon}
                   </div>
@@ -192,7 +194,7 @@ export default function Contact() {
 
                 <button 
                   disabled={status === 'loading'}
-                  className="w-full py-5 bg-primary-600 text-white rounded-2xl font-black text-xl shadow-xl shadow-primary-600/20 hover:bg-primary-700 transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed group overflow-hidden"
+                  className="w-full py-5 bg-primary-600 text-white rounded-2xl font-black text-xl shadow-xl shadow-primary-600/20 hover:bg-primary-700 hover:-translate-y-1 transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed group overflow-hidden"
                 >
                   <AnimatePresence mode="wait">
                     {status === 'loading' ? (
@@ -238,7 +240,7 @@ export default function Contact() {
 
       {/* --- Simple Footer Label --- */}
       <div className="text-center py-10 opacity-30">
-        <p className="text-xs font-black dark:text-white tracking-[0.4em] uppercase">Sentryk Communication Hub • 2026</p>
+        <p className="text-xs font-black dark:text-white tracking-[0.4em] uppercase font-display">Sentryk Communication Hub • 2026</p>
       </div>
 
     </div>
