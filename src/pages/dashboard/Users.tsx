@@ -60,6 +60,27 @@ const UserModal = ({ isOpen, onClose, onSubmit, initialData }: any) => {
   if (!isOpen) return null;
 
   return (
+    <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 p-5 rounded-2xl text-sm text-blue-900 dark:text-blue-300 font-bold leading-relaxed">
+  يتيح النظام مستويين مختلفين من الصلاحيات: <span className="font-black">الأدمن</span> و <span className="font-black">السكرتيرة</span>.
+  <br /><br />
+  
+  يمتلك <span className="font-black">الأدمن</span> صلاحيات كاملة داخل النظام، حيث يمكنه الوصول إلى جميع الصفحات 
+  وإدارة كافة البيانات بدون أي قيود.
+  
+  <br /><br />
+  
+  أما <span className="font-black">السكرتيرة</span> فلديها صلاحيات محدودة، حيث يمكنها الوصول فقط إلى 
+  صفحتي <span className="font-black">الطلاب</span> و <span className="font-black">المجموعات</span>.
+  
+  <br /><br />
+  
+  يمكن للسكرتيرة تعديل بيانات الطلاب، وتجديد الاشتراكات، وكذلك تعديل بيانات المجموعات، 
+  لكنها <span className="font-black">لا تستطيع حذف أي بيانات داخل النظام</span>.
+  
+  <br /><br />
+  
+  أي صفحات أخرى داخل لوحة التحكم تكون متاحة فقط لـ <span className="font-black">الأدمن</span> ولا يمكن للسكرتيرة الوصول إليها.
+</div>
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden border dark:border-slate-800">
         <div className="p-6 border-b dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
