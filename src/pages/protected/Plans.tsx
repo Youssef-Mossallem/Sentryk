@@ -45,7 +45,7 @@ export default function Plans() {
 
     const prices = {
         monthly: 199,
-        yearly: 1249
+        yearly: 1199
     };
 
     const handleSubscription = async (planType: "TRIAL" | "MONTHLY" | "YEARLY") => {
