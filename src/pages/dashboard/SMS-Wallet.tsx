@@ -217,7 +217,7 @@ export default function SmsWallet() {
                     <h2 className="text-4xl font-black dark:text-white mb-1 tracking-tight">
                         {wallet?.balanceInMoney || "0.00"} <span className="text-lg text-slate-400">ج.م</span>
                     </h2>
-                    <p className="text-indigo-600 text-xs font-black mt-2">سعر الرسالة (60 حرف): {wallet?.pricePerMessage || 0.25} ج.م</p>
+                    <p className="text-indigo-600 text-xs font-black mt-2">سعر الرسالة (60 حرف): {wallet?.pricePerMessage || 0.30} ج.م</p>
                 </div>
 
                 <div className="bg-white dark:bg-slate-900 p-9 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-center">
@@ -311,7 +311,7 @@ export default function SmsWallet() {
                                 </div>
                                 
                                 <div className="relative">
-                                    <input type="number" value={smsToCharge} onChange={e => setSmsToCharge(Number(e.target.value))} className="w-full p-6 bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-indigo-500 rounded-[2rem] text-center font-black text-3xl dark:text-white outline-none transition-all" />
+                                    <input min="100" type="number" value={smsToCharge} onChange={e => setSmsToCharge(Number(e.target.value))} className="w-full p-6 bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-indigo-500 rounded-[2rem] text-center font-black text-3xl dark:text-white outline-none transition-all" />
                                     <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 font-bold">SMS</span>
                                 </div>
 
