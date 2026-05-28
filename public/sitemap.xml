@@ -1,26 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset 
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- الصفحة الرئيسية (لوحة التحكم والتعريف بالنظام) -->
   <url>
     <loc>https://sentryk.vercel.app/</loc>
-    <lastmod>2026-04-28</lastmod>
-    <priority>1.0</priority>
+    <lastmod>2026-05-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.00</priority>
   </url>
 
+  <!-- صفحة الميزات والخصائص التقنية (مهمة جداً لجلب العملاء) -->
+  <url>
+    <loc>https://sentryk.vercel.app/features</loc>
+    <lastmod>2026-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- صفحة من نحن والتعريف بمنصة سنترك -->
   <url>
     <loc>https://sentryk.vercel.app/about</loc>
-    <lastmod>2026-04-28</lastmod>
-    <priority>0.8</priority>
+    <lastmod>2026-05-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
   </url>
 
+  <!-- صفحة الدعم الفني والتواصل معنا -->
   <url>
     <loc>https://sentryk.vercel.app/contact</loc>
-    <lastmod>2026-04-28</lastmod>
-    <priority>0.7</priority>
+    <lastmod>2026-05-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
   </url>
 
+  <!-- صفحة الأسئلة الشائعة (FAQ) وهي كنز للـ SEO لظهور الـ Rich Snippets -->
   <url>
     <loc>https://sentryk.vercel.app/faq</loc>
-    <lastmod>2026-04-28</lastmod>
-    <priority>0.6</priority>
+    <lastmod>2026-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.65</priority>
   </url>
+
 </urlset>
