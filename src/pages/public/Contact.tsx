@@ -15,6 +15,8 @@ import {
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useThemeStore } from '../../store/useThemeStore';
+import { Helmet } from "react-helmet-async";
+
 
 export default function Contact() {
   const { darkMode, toggleTheme } = useThemeStore();
@@ -59,6 +61,115 @@ export default function Contact() {
   };
 
   return (
+    <>
+    <Helmet>
+  <title>
+    تواصل معنا | SENTRYK - الدعم الفني واستفسارات السناتر التعليمية
+  </title>
+
+  <meta
+    name="description"
+    content="تواصل مع فريق SENTRYK للحصول على الدعم الفني، الاستفسارات التجارية، المساعدة التقنية، أو معرفة تفاصيل الاشتراكات وخدمات إدارة السناتر التعليمية."
+  />
+
+  <meta
+    name="keywords"
+    content="
+      تواصل معنا,
+      Contact SENTRYK,
+      دعم فني سنترك,
+      استفسارات سنترك,
+      نظام إدارة السناتر,
+      الدعم الفني,
+      مركز المساعدة,
+      إدارة المراكز التعليمية,
+      Educational Management System,
+      Student Management System,
+      SaaS Education,
+      Help Center,
+      Technical Support,
+      Customer Support
+    "
+  />
+
+  <meta name="author" content="Youssef Ahmed Mossallem" />
+  <meta name="creator" content="Youssef Ahmed Mossallem" />
+  <meta name="publisher" content="SENTRYK" />
+
+  <meta
+    name="robots"
+    content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1"
+  />
+
+  <meta name="googlebot" content="index,follow" />
+
+  <link
+    rel="canonical"
+    href="https://sentryk.vercel.app/contact"
+  />
+
+  {/* Open Graph */}
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="SENTRYK" />
+  <meta property="og:locale" content="ar_EG" />
+
+  <meta
+    property="og:title"
+    content="تواصل معنا | SENTRYK"
+  />
+
+  <meta
+    property="og:description"
+    content="تواصل مع فريق SENTRYK للدعم الفني والاستفسارات والمساعدة التقنية الخاصة بإدارة السناتر التعليمية."
+  />
+
+  <meta
+    property="og:url"
+    content="https://sentryk.vercel.app/contact"
+  />
+
+  {/* Twitter */}
+  <meta
+    name="twitter:card"
+    content="summary_large_image"
+  />
+
+  <meta
+    name="twitter:title"
+    content="تواصل معنا | SENTRYK"
+  />
+
+  <meta
+    name="twitter:description"
+    content="فريق SENTRYK جاهز للرد على جميع استفساراتك وتقديم الدعم الفني والمساعدة."
+  />
+
+  {/* SEO Extras */}
+  <meta name="language" content="Arabic" />
+  <meta name="geo.region" content="EG" />
+  <meta name="geo.country" content="Egypt" />
+  <meta name="rating" content="general" />
+
+  {/* Structured Data */}
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "ContactPage",
+      name: "Contact SENTRYK",
+      url: "https://sentryk.vercel.app/contact",
+      description:
+        "صفحة التواصل الرسمية لمنصة SENTRYK للدعم الفني والاستفسارات.",
+      publisher: {
+        "@type": "Organization",
+        name: "SENTRYK"
+      },
+      author: {
+        "@type": "Person",
+        name: "Youssef Ahmed Mossallem"
+      }
+    })}
+  </script>
+</Helmet>
     <div className="min-h-screen bg-slate-50 dark:bg-[#030712] transition-colors duration-700 text-right overflow-x-hidden" dir="rtl">
       
       {/* --- Navbar --- */}
@@ -244,5 +355,5 @@ export default function Contact() {
       </div>
 
     </div>
-  );
+</>  );
 }
