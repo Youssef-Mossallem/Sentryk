@@ -20,6 +20,7 @@ import {
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useThemeStore } from '../../store/useThemeStore';
+import { Helmet } from "react-helmet-async";
 
 export default function Policy() {
   const { darkMode, toggleTheme } = useThemeStore();
@@ -32,6 +33,119 @@ export default function Policy() {
   ];
 
   return (
+    <><Helmet>
+  <title>
+    الشروط والأحكام وسياسة الخصوصية | SENTRYK
+  </title>
+
+  <meta
+    name="description"
+    content="اطلع على الشروط والأحكام وسياسة الخصوصية وسياسة الاسترداد الخاصة بمنصة SENTRYK لإدارة السناتر التعليمية. تعرف على حقوقك والتزاماتك وكيفية حماية بياناتك."
+  />
+
+  <meta
+    name="keywords"
+    content="
+      شروط الاستخدام,
+      سياسة الخصوصية,
+      سياسة الاسترداد,
+      اتفاقية الاستخدام,
+      حماية البيانات,
+      SENTRYK,
+      سنترك,
+      Privacy Policy,
+      Terms of Service,
+      Refund Policy,
+      Data Protection,
+      Educational Management System,
+      SaaS Legal Policy
+    "
+  />
+
+  <meta name="author" content="Youssef Ahmed Mossallem" />
+  <meta name="creator" content="Youssef Ahmed Mossallem" />
+  <meta name="publisher" content="SENTRYK" />
+
+  <meta
+    name="robots"
+    content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1"
+  />
+
+  <meta name="googlebot" content="index,follow" />
+
+  <link
+    rel="canonical"
+    href="https://sentryk.vercel.app/policy"
+  />
+
+  {/* Open Graph */}
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="SENTRYK" />
+  <meta property="og:locale" content="ar_EG" />
+
+  <meta
+    property="og:title"
+    content="الشروط والأحكام وسياسة الخصوصية | SENTRYK"
+  />
+
+  <meta
+    property="og:description"
+    content="تعرف على شروط استخدام منصة SENTRYK وسياسة الخصوصية وحماية البيانات وسياسة الاسترداد."
+  />
+
+  <meta
+    property="og:url"
+    content="https://sentryk.vercel.app/policy"
+  />
+
+  {/* Twitter */}
+  <meta
+    name="twitter:card"
+    content="summary_large_image"
+  />
+
+  <meta
+    name="twitter:title"
+    content="الشروط والأحكام | SENTRYK"
+  />
+
+  <meta
+    name="twitter:description"
+    content="الشروط القانونية وسياسة الخصوصية وسياسة الاسترداد الخاصة بمنصة SENTRYK."
+  />
+
+  {/* Extra SEO */}
+  <meta name="language" content="Arabic" />
+  <meta name="geo.region" content="EG" />
+  <meta name="geo.country" content="Egypt" />
+  <meta name="rating" content="general" />
+
+  {/* Legal Schema */}
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "Terms and Privacy Policy",
+      url: "https://sentryk.vercel.app/policy",
+      description:
+        "الشروط والأحكام وسياسة الخصوصية وسياسة الاسترداد الخاصة بمنصة SENTRYK.",
+      publisher: {
+        "@type": "Organization",
+        name: "SENTRYK"
+      },
+      author: {
+        "@type": "Person",
+        name: "Youssef Ahmed Mossallem"
+      },
+      about: [
+        "Terms of Service",
+        "Privacy Policy",
+        "Refund Policy",
+        "Data Protection"
+      ]
+    })}
+  </script>
+</Helmet>
     <div className="min-h-screen bg-slate-50 dark:bg-[#030712] transition-colors duration-700 text-right overflow-x-hidden pb-20 font-sans" dir="rtl">
       
       {/* --- Navbar --- */}
@@ -233,5 +347,5 @@ export default function Policy() {
       </footer>
 
     </div>
-  );
+ </>  );
 }
