@@ -1,9 +1,10 @@
 import { motion, type Variants } from 'framer-motion';
 import { 
-  Heart, Users, GraduationCap, Sparkles, MousePointer2, ChevronLeft, Briefcase, Sun, Moon, ShieldCheck, Code, Smartphone, BarChart3
+  Heart, GraduationCap, Sparkles, MousePointer2, ChevronLeft, Briefcase, Sun, Moon, ShieldCheck, Code, Smartphone, BarChart3
 } from 'lucide-react';
 import { useThemeStore } from '../../store/useThemeStore';
 import { Link } from 'react-router-dom';
+import { Helmet } from "react-helmet-async";
 
 export default function About() {
   const { darkMode, toggleTheme } = useThemeStore();
@@ -30,6 +31,119 @@ export default function About() {
   };
 
   return (
+    <>
+    <Helmet>
+  <title>
+    من نحن | SENTRYK - نظام إدارة السناتر التعليمية ومراكز الدروس الخصوصية
+  </title>
+
+  <meta
+    name="description"
+    content="تعرف على منصة SENTRYK لإدارة السناتر التعليمية ومراكز الدروس الخصوصية. اكتشف رؤية المنصة وأهدافها ومزاياها التقنية المتقدمة ومعلومات عن المطور يوسف أحمد مسلم."
+  />
+
+  <meta
+    name="keywords"
+    content="
+      SENTRYK,
+      سنترك,
+      نظام إدارة سناتر,
+      إدارة مراكز تعليمية,
+      إدارة الطلاب,
+      نظام اشتراكات الطلاب,
+      برنامج سنتر تعليمي,
+      إدارة الدروس الخصوصية,
+      منصة تعليمية,
+      Educational Management System,
+      SaaS Education,
+      School Management,
+      Student Management,
+      Center Management,
+      يوسف أحمد مسلم,
+      Youssef Ahmed Mossallem
+    "
+  />
+
+  <meta name="author" content="Youssef Ahmed Mossallem" />
+  <meta name="creator" content="Youssef Ahmed Mossallem" />
+  <meta name="publisher" content="SENTRYK" />
+
+  <meta
+    name="robots"
+    content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1"
+  />
+
+  <meta name="googlebot" content="index,follow" />
+
+  <link
+    rel="canonical"
+    href="https://sentryk.vercel.app/about"
+  />
+
+  {/* Open Graph */}
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="ar_EG" />
+  <meta property="og:site_name" content="SENTRYK" />
+
+  <meta
+    property="og:title"
+    content="من نحن | SENTRYK - نظام إدارة السناتر التعليمية"
+  />
+
+  <meta
+    property="og:description"
+    content="منصة سحابية متطورة لإدارة السناتر التعليمية والطلاب والاشتراكات والتقارير المالية والصلاحيات المتقدمة."
+  />
+
+  <meta
+    property="og:url"
+    content="https://sentryk.vercel.app/about"
+  />
+
+  {/* Twitter */}
+  <meta
+    name="twitter:card"
+    content="summary_large_image"
+  />
+
+  <meta
+    name="twitter:title"
+    content="من نحن | SENTRYK"
+  />
+
+  <meta
+    name="twitter:description"
+    content="تعرف على منصة SENTRYK ومزاياها التقنية ورؤية تطويرها."
+  />
+
+  {/* إضافات SEO احترافية */}
+  <meta name="language" content="Arabic" />
+  <meta name="geo.region" content="EG" />
+  <meta name="geo.country" content="Egypt" />
+  <meta name="rating" content="general" />
+  <meta name="revisit-after" content="7 days" />
+
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      name: "About SENTRYK",
+      url: "https://sentryk.vercel.app/about",
+      description:
+        "تعرف على منصة SENTRYK لإدارة السناتر التعليمية ومراكز الدروس الخصوصية.",
+      mainEntity: {
+        "@type": "SoftwareApplication",
+        name: "SENTRYK",
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        creator: {
+          "@type": "Person",
+          name: "Youssef Ahmed Mossallem"
+        }
+      }
+    })}
+  </script>
+</Helmet>
     <div className="min-h-screen bg-slate-50 dark:bg-[#030712] transition-colors duration-700 text-right overflow-x-hidden pb-20" dir="rtl">
       
       {/* --- Navbar --- */}
@@ -193,5 +307,6 @@ export default function About() {
       </section>
 
     </div>
+    </>
   );
 }
