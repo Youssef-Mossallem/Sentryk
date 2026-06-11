@@ -5,6 +5,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useEffect } from "react";
+import { HelmetProvider } from "react-helmet-async";
 import api from "./api/axios";
 import { useThemeStore } from "./store/useThemeStore";
 import { useAuthStore } from "./store/useAuthStore";
@@ -94,6 +95,7 @@ function App() {
   }, [isAuthenticated, token, updateAuth, logout, checkSubscription]);
 
   return (
+    <HelmetProvider>
     <Router>
       <ScrollToTop />
       <Routes>
@@ -188,6 +190,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
+  </HelmetProvider>
   );
 }
 
