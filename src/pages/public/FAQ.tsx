@@ -17,6 +17,7 @@ import {
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useThemeStore } from '../../store/useThemeStore';
+import { Helmet } from 'react-helmet-async';
 
 // هيكل البيانات المطور والملائم لمميزات "سنترك" الحقيقية
 const faqData = [
@@ -100,6 +101,130 @@ export default function FAQ() {
   const [activeQuestion, setActiveQuestion] = useState<string | null>(null);
 
   return (
+    <><Helmet>
+  <title>
+    الأسئلة الشائعة | SENTRYK - إجابات واستفسارات نظام إدارة السناتر التعليمية
+  </title>
+
+  <meta
+    name="description"
+    content="اعثر على إجابات جميع الأسئلة الشائعة حول منصة SENTRYK، الصلاحيات، إدارة الطلاب، الاشتراكات، الرسائل SMS، الدفع الإلكتروني، والدعم الفني."
+  />
+
+  <meta
+    name="keywords"
+    content="
+      FAQ,
+      الأسئلة الشائعة,
+      SENTRYK FAQ,
+      سنترك,
+      دعم سنترك,
+      إدارة الطلاب,
+      إدارة السناتر التعليمية,
+      نظام الاشتراكات,
+      رسائل SMS,
+      Paymob,
+      صلاحيات الأدمن,
+      صلاحيات السكرتارية,
+      Activity Log,
+      Educational Management System,
+      Student Management System,
+      SaaS Education
+    "
+  />
+
+  <meta name="author" content="Youssef Ahmed Mossallem" />
+  <meta name="creator" content="Youssef Ahmed Mossallem" />
+  <meta name="publisher" content="SENTRYK" />
+
+  <meta
+    name="robots"
+    content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1"
+  />
+
+  <meta name="googlebot" content="index,follow" />
+
+  <link
+    rel="canonical"
+    href="https://sentryk.vercel.app/faq"
+  />
+
+  {/* Open Graph */}
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="ar_EG" />
+  <meta property="og:site_name" content="SENTRYK" />
+
+  <meta
+    property="og:title"
+    content="الأسئلة الشائعة | SENTRYK"
+  />
+
+  <meta
+    property="og:description"
+    content="كل ما تريد معرفته عن منصة SENTRYK لإدارة السناتر التعليمية والطلاب والاشتراكات والدعم الفني."
+  />
+
+  <meta
+    property="og:url"
+    content="https://sentryk.vercel.app/faq"
+  />
+
+  {/* Twitter */}
+  <meta
+    name="twitter:card"
+    content="summary_large_image"
+  />
+
+  <meta
+    name="twitter:title"
+    content="الأسئلة الشائعة | SENTRYK"
+  />
+
+  <meta
+    name="twitter:description"
+    content="إجابات شاملة عن جميع استفسارات منصة SENTRYK التعليمية."
+  />
+
+  {/* SEO Extras */}
+  <meta name="language" content="Arabic" />
+  <meta name="geo.region" content="EG" />
+  <meta name="geo.country" content="Egypt" />
+  <meta name="rating" content="general" />
+
+  {/* FAQ Schema */}
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "من هو مطور ومؤسس منصة سنترك؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "يوسف أحمد مسلم هو مطور ومؤسس منصة SENTRYK."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "ما الفرق بين الأدمن والسكرتارية؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "الأدمن يمتلك جميع الصلاحيات بينما السكرتارية تمتلك صلاحيات تشغيلية محددة."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "هل توجد فترة تجريبية مجانية؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "نعم، توفر منصة SENTRYK فترة تجريبية مجانية لمدة 14 يوماً."
+          }
+        }
+      ]
+    })}
+  </script>
+</Helmet>
     <div className={`min-h-screen ${darkMode ? 'bg-[#030712] text-white' : 'bg-slate-50 text-slate-900'} transition-colors duration-700 text-right overflow-x-hidden font-sans pb-20`} dir="rtl">
       
       {/* --- Navbar --- */}
@@ -250,5 +375,5 @@ export default function FAQ() {
         </p>
       </footer>
     </div>
-  );
+</>  );
 }
