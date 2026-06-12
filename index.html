@@ -92,52 +92,104 @@
     <!-- ========================================== -->
     <!-- البيانات المنظمة الفائقة (Advanced JSON-LD Schema)-->
     <!-- ========================================== -->
-    <script type="application/ld+json">
+   <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
     {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "SoftwareApplication",
-          "@id": "https://sentryk.vercel.app/#software",
-          "name": "SENTRYK",
-          "applicationCategory": "BusinessApplication",
-          "operatingSystem": "Web",
-          "url": "https://sentryk.vercel.app",
-          "description": "نظام SaaS متكامل لإدارة السناتر التعليمية ومراكز الدروس، مع ميزات الفوترة والاشتراكات المتعددة ونظام الرسائل القصيرة وإدارة الأدوار والصلاحيات للأدمن والسكرتارية.",
-          "applicationSubCategory": "Educational Management System",
-          "offers": {
-            "@type": "AggregateOffer",
-            "priceCurrency": "EGP",
-            "price": "0",
-            "description": "يوفر النظام فترة تجريبية مجانية لمدة 14 يوماً مع خيارات اشتراك شهري وسنوي مرنة."
-          },
-          "author": {
-            "@id": "https://sentryk.vercel.app/#creator"
-          },
-          "featureList": [
-            "نظام صلاحيات متعدد (أدمن وسكرتارية)",
-            "إدارة الطلاب الذكية والاشتراكات الملونة",
-            "تسعير المواد والمراحل التعليمية بمرونة",
-            "نظام المجموعات الرئيسي والفرعي",
-            "محفظة ورسائل SMS تلقائية عند التسجيل والتجديد",
-            "بوابة دفع متكاملة Paymob",
-            "لوحة تحكم وتقارير مالية متقدمة مقارنة بالشهر السابق",
-            "سجل نشاط كامل للعمليات للحماية والأمان"
-          ]
-        },
-        {
-          "@type": "Person",
-          "@id": "https://sentryk.vercel.app/#creator",
-          "name": "Youssef Ahmed Mossallem",
-          "jobTitle": "Full-Stack Web3 & Software Engineer",
-          "url": "https://github.com/youssefmossallem",
-          "sameAs": [
-            "https://sentryk.vercel.app"
-          ]
-        }
+      "@type": "Organization",
+      "@id": "https://sentryk.vercel.app/#organization",
+      "name": "SENTRYK",
+      "alternateName": "سنترك",
+      "url": "https://sentryk.vercel.app",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://sentryk.vercel.app/favicon.svg"
+      },
+      "image": "https://sentryk.vercel.app/og-image.png",
+      "description": "منصة سحابية متكاملة لإدارة السناتر التعليمية ومراكز الدروس الخصوصية.",
+      "founder": {
+        "@id": "https://sentryk.vercel.app/#creator"
+      },
+      "creator": {
+        "@id": "https://sentryk.vercel.app/#creator"
+      },
+      "sameAs": [
+        "https://github.com/Youssef-Mossallem"
+      ],
+      "areaServed": {
+        "@type": "Country",
+        "name": "Egypt"
+      },
+      "knowsAbout": [
+        "Educational Management",
+        "Student Management",
+        "Attendance Tracking",
+        "Educational SaaS",
+        "SMS Notifications",
+        "Payment Integration",
+        "Private Tutoring Centers",
+        "School Administration"
       ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://sentryk.vercel.app/#website",
+      "url": "https://sentryk.vercel.app",
+      "name": "SENTRYK",
+      "publisher": {
+        "@id": "https://sentryk.vercel.app/#organization"
+      },
+      "inLanguage": "ar",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://sentryk.vercel.app/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://sentryk.vercel.app/#software",
+      "name": "SENTRYK",
+      "applicationCategory": "BusinessApplication",
+      "applicationSubCategory": "Educational Management System",
+      "operatingSystem": "Web",
+      "url": "https://sentryk.vercel.app",
+      "publisher": {
+        "@id": "https://sentryk.vercel.app/#organization"
+      },
+      "creator": {
+        "@id": "https://sentryk.vercel.app/#creator"
+      },
+      "description": "نظام SaaS متكامل لإدارة السناتر التعليمية ومراكز الدروس، مع ميزات الفوترة والاشتراكات المتعددة ونظام الرسائل القصيرة وإدارة الأدوار والصلاحيات للأدمن والسكرتارية.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EGP",
+        "availability": "https://schema.org/InStock",
+        "description": "يوفر النظام فترة تجريبية مجانية لمدة 14 يوماً مع خيارات اشتراك مرنة."
+      },
+      "featureList": [
+        "نظام صلاحيات متعدد (أدمن وسكرتارية)",
+        "إدارة الطلاب الذكية والاشتراكات الملونة",
+        "تسعير المواد والمراحل التعليمية بمرونة",
+        "نظام المجموعات الرئيسي والفرعي",
+        "محفظة ورسائل SMS تلقائية عند التسجيل والتجديد",
+        "بوابة دفع متكاملة Paymob",
+        "لوحة تحكم وتقارير مالية متقدمة مقارنة بالشهر السابق",
+        "سجل نشاط كامل للعمليات للحماية والأمان"
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://sentryk.vercel.app/#creator",
+      "name": "Youssef Ahmed Mossallem",
+      "jobTitle": "Full-Stack",
+      "url": "https://github.com/Youssef-Mossallem"
     }
-    </script>
+  ]
+}
+</script>
     
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-P146P6T3M5"></script>
