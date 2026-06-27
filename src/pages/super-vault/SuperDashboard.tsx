@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios"; // تم إضافة الآكسيوس لمحرك الفهرسة الفورية
 import {
   ShieldAlert,
   Users,
@@ -23,7 +24,9 @@ import {
   Clock,
   Filter,
   Activity,
-  UserCheck
+  UserCheck,
+  Globe, // تم إضافة أيقونة الشبكة العالمية
+  Zap    // تم إضافة أيقونة الطاقة الذكية
 } from "lucide-react";
 import { superVaultApi } from "../../api/superVaultApi";
 
@@ -88,7 +91,7 @@ export default function SuperDashboard() {
   // ===========================================================================
   // STATE MANAGEMENT (إدارة الحالة الشاملة والذكية للوحة التحكم)
   // ===========================================================================
-  const [activeTab, setActiveTab] = useState<"overview" | "centers" | "promo-codes">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "centers" | "promo-codes" | "indexing">("overview");
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [centers, setCenters] = useState<Center[]>([]);
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
@@ -111,6 +114,13 @@ export default function SuperDashboard() {
   const [controlCenterTarget, setControlCenterTarget] = useState<Center | null>(null);
   const [promoCodeTarget, setPromoCodeTarget] = useState<{ mode: "CREATE" | "EDIT"; data: Partial<PromoCode> | null } | null>(null);
   const [hardDeleteTarget, setHardDeleteTarget] = useState<{ id: number; verificationName: string; input: string } | null>(null);
+
+  // ✨ [حالات محرك الفهرسة الفورية الجديد]: تسيير وإدارة طلبات الأرشفة السريعة لجوجل
+  const [targetDomain, setTargetDomain] = useState("https://sentryk.vercel.app");
+  const [selectedPages, setSelectedPages] = useState<string[]>(["/", "/about", "/faq", "/policy", "/contact"]);
+  const [customRouteInput, setCustomRouteInput] = useState("");
+  const [indexingLoading, setIndexingLoading] = useState(false);
+  const [indexingTelemetry, setIndexingTelemetry] = useState<any>(null);
 
   // ===========================================================================
   // DATA FETCHING ENGINE (محرك جلب البيانات المتزامن عالي الكفاءة)
@@ -179,7 +189,7 @@ export default function SuperDashboard() {
         alert(response.error || "فشل تحديث بيانات السنتر.");
       }
     } catch (err: any) {
-      alert(err?.response?.data?.error || "حدث خطأ خادم داخلي أثناء التعديل.");
+      alert(err?.response?.data?.error || "حدث خطأ خادم داخللي أثناء التعديل.");
     } finally {
       setActionLoading(false);
     }
@@ -270,6 +280,69 @@ export default function SuperDashboard() {
     }
   };
 
+  // ⚡ [محرك تشغيل الفهرسة الفورية بجوجل]: معالجة وإرسال المصفوفة للباك إند
+  const handleInstantIndexingExecute = async () => {
+    if (selectedPages.length === 0) {
+      alert("برجاء اختيار صفحة واحدة على الأقل لإرسالها لمحرك البحث.");
+      return;
+    }
+
+    setIndexingLoading(true);
+    setIndexingTelemetry(null);
+
+    // بناء روابط كامة من خلال دمج النطاق مع المسارات المحددة
+    const fullUrlsToIndex = selectedPages.map(page => {
+      const cleanDomain = targetDomain.endsWith("/") ? targetDomain.slice(0, -1) : targetDomain;
+      const cleanPath = page.startsWith("/") ? page : `/${page}`;
+      return `${cleanDomain}${cleanPath}`;
+    });
+
+    try {
+      // استدعاء مباشرة لراوت الخدمة العام في الـ Backend
+      const response = await axios.post("/api/indexing/request-instant", {
+        urls: fullUrlsToIndex
+      });
+
+      setIndexingTelemetry({
+        success: true,
+        summary: response.data.summary,
+        results: response.data.results
+      });
+    } catch (error: any) {
+      console.error(error);
+      setIndexingTelemetry({
+        success: false,
+        error: error.response?.data?.error || "فشلت عملية معالجة طلب الفهرسة السيادي."
+      });
+    } finally {
+      setIndexingLoading(false);
+    }
+  };
+
+  // تفعيل/إلغاء صفحة من مصفوفة الإرسال بجوجل
+  const togglePageSelection = (route: string) => {
+    if (selectedPages.includes(route)) {
+      setSelectedPages(selectedPages.filter(p => p !== route));
+    } else {
+      setSelectedPages([...selectedPages, route]);
+    }
+  };
+
+  // حقن مسار مخصص جديد في المصفوفة الحالية للواجهة
+  const injectCustomRoute = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customRouteInput.trim()) return;
+    
+    let route = customRouteInput.trim();
+    if (!route.startsWith("/")) route = "/" + route;
+
+    if (!selectedPages.includes(route)) {
+      setSelectedPages([...selectedPages, route]);
+    }
+    setCustomRouteInput("");
+  };
+
+
   // ===========================================================================
   // SMART PERFORMANCE FILTERS (محركات الفرز والبحث الفوري المعتمدة على الـ Memo)
   // ===========================================================================
@@ -355,12 +428,12 @@ export default function SuperDashboard() {
       )}
 
       {/* لوحة التبويبات الكبرى (Main Navigation Matrix) */}
-      <div className="flex p-1.5 bg-slate-900/50 border border-slate-800/80 rounded-2xl mb-8 max-w-lg shadow-inner">
-        {(["overview", "centers", "promo-codes"] as const).map((tab) => (
+      <div className="flex p-1.5 bg-slate-900/50 border border-slate-800/80 rounded-2xl mb-8 max-w-2xl shadow-inner overflow-x-auto">
+        {(["overview", "centers", "promo-codes", "indexing"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-3 px-4 rounded-xl font-black text-sm transition-all duration-300 flex items-center justify-center gap-2 ${activeTab === tab
+            className={`flex-1 py-3 px-4 rounded-xl font-black text-sm transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === tab
                 ? "bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-lg shadow-primary-600/15"
                 : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
               }`}
@@ -368,10 +441,12 @@ export default function SuperDashboard() {
             {tab === "overview" && <TrendingUp size={16} />}
             {tab === "centers" && <Building size={16} />}
             {tab === "promo-codes" && <Percent size={16} />}
+            {tab === "indexing" && <Globe size={16} />}
             <span>
               {tab === "overview" && "التحليلات والمؤشرات الكبرى"}
               {tab === "centers" && "إدارة ومراقبة السناتر"}
               {tab === "promo-codes" && "قسائم وأكواد الخصم"}
+              {tab === "indexing" && "فهرسة الصفحات العامة"}
             </span>
           </button>
         ))}
@@ -749,6 +824,228 @@ export default function SuperDashboard() {
                     );
                   })
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* ===========================================================================
+              ✨ TAB 4: GOOGLE INSTANT INDEXING STUDIO (محرك الفهرسة الفورية والأرشفة)
+              =========================================================================== */}
+          {activeTab === "indexing" && (
+            <div className="space-y-6">
+              {/* اللوحة العلوية لتحديد النطاق وحقن روابط مخصصة */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                {/* مدخل النطاق المستهدف */}
+                <div className="bg-slate-900/40 border border-slate-800 p-5 rounded-2xl shadow-lg flex flex-col justify-between">
+                  <div>
+                    <label className="block text-xs font-black text-slate-400 mb-2 flex items-center gap-1.5">
+                      <Globe size={14} className="text-primary-400" />
+                      <span>النطاق الأساسي المراد فهرسته (Target Domain)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={targetDomain}
+                      onChange={(e) => setTargetDomain(e.target.value)}
+                      placeholder="https://sentryk.vercel.app"
+                      className="w-full bg-slate-950 border border-slate-800 px-4 py-2.5 rounded-xl text-xs font-mono font-bold text-white focus:outline-none focus:border-primary-500 transition-all shadow-inner"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 font-bold mt-3">سيتم دمج هذا النطاق تلقائياً مع المسارات المحددة بالأسفل قبل الإرسال الفوري للـ API.</p>
+                </div>
+
+                {/* فورم حقن مسار مخصص يدوي سريع */}
+                <form onSubmit={injectCustomRoute} className="bg-slate-900/40 border border-slate-800 p-5 rounded-2xl shadow-lg flex flex-col justify-between lg:col-span-2">
+                  <div>
+                    <label className="block text-xs font-black text-slate-400 mb-2 flex items-center gap-1.5">
+                      <Plus size={14} className="text-cyan-400" />
+                      <span>حقن مسار إضافي مخصص في قائمة الفهرسة المؤقتة</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={customRouteInput}
+                        onChange={(e) => setCustomRouteInput(e.target.value)}
+                        placeholder="مثال: /blog/new-update-2026 أو مسار كورس جديد"
+                        className="flex-1 bg-slate-950 border border-slate-800 px-4 py-2.5 rounded-xl text-xs font-bold text-white focus:outline-none focus:border-primary-500 transition-all shadow-inner"
+                      />
+                      <button
+                        type="submit"
+                        className="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 border border-slate-700/60 rounded-xl font-bold text-xs text-white transition-all whitespace-nowrap"
+                      >
+                        إضافة للمصفوفة
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-slate-500 font-bold mt-3">تتيح لك هذه الميزة إرسال أي رابط استثنائي فرعي تم إنشاؤه تواً بدون الحاجة لتعديل الكود المصدري للوحة.</p>
+                </form>
+              </div>
+
+              {/* لوحة التحكم المركزية بالروابط الأساسية للموقع */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                {/* قائمة مسارات النظام العامة القابلة للفرز والاختيار */}
+                <div className="bg-slate-900/20 border border-slate-800/80 p-6 rounded-2xl lg:col-span-2 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-base font-black text-white flex items-center gap-2">
+                        <Zap size={18} className="text-primary-400" />
+                        <span>قائمة روابط الصفحات العامة المتاحة للأرشفة الفورية</span>
+                      </h4>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setSelectedPages(["/", "/about", "/faq", "/policey", "/contact"])}
+                          className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-2 py-1 rounded"
+                        >
+                          تحديد الافتراضي
+                        </button>
+                        <button
+                          onClick={() => setSelectedPages([])}
+                          className="text-[10px] bg-red-950 text-red-400 font-bold px-2 py-1 rounded"
+                        >
+                          إلغاء تحديد الكل
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                      {/* عرض الروابط الأساسية الخمسة المطلوبة والمحسنة هندسياً */}
+                      {[
+                        { route: "/", desc: "الصفحة الرئيسية للمنصة (Landing Page)" },
+                        { route: "/about", desc: "من نحن ومعلومات حول Sentryk" },
+                        { route: "/faq", desc: "الأسئلة الشائعة والمساعدة للعملاء" },
+                        { route: "/policey", desc: "سياسة الخصوصية والشروط الفاتورية وقوانين الاستخدام" },
+                        { route: "/contact", desc: "صفحة اتصل بنا ووسائل الدعم الفني السيادي" }
+                      ].map((page) => (
+                        <div
+                          key={page.route}
+                          onClick={() => togglePageSelection(page.route)}
+                          className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                            selectedPages.includes(page.route)
+                              ? "bg-primary-950/20 border-primary-500/40 text-white"
+                              : "bg-slate-950/50 border-slate-800/80 text-slate-400 hover:border-slate-700"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-4 h-4 rounded flex items-center justify-center border ${
+                              selectedPages.includes(page.route)
+                                ? "bg-primary-600 border-primary-500 text-white"
+                                : "border-slate-700 bg-slate-900"
+                            }`}>
+                              {selectedPages.includes(page.route) && <span className="text-[10px] font-bold">✓</span>}
+                            </div>
+                            <span className="font-mono font-bold text-xs bg-slate-950 px-2 py-0.5 rounded border border-slate-800/80 text-slate-300">
+                              {page.route}
+                            </span>
+                            <span className="text-xs font-medium text-slate-400 hidden sm:inline">— {page.desc}</span>
+                          </div>
+                          <span className="text-[10px] font-mono font-bold text-slate-500 hidden md:inline">
+                            {targetDomain.endsWith("/") ? targetDomain.slice(0, -1) : targetDomain}{page.route}
+                          </span>
+                        </div>
+                      ))}
+
+                      {/* الروابط الإضافية التي تم حقنها يدوياً */}
+                      {selectedPages.filter(p => !["/", "/about", "/faq", "/policey", "/contact"].includes(p)).map((customPath) => (
+                        <div
+                          key={customPath}
+                          onClick={() => togglePageSelection(customPath)}
+                          className="p-3.5 rounded-xl border bg-cyan-950/10 border-cyan-500/30 text-white transition-all cursor-pointer flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-4 h-4 rounded flex items-center justify-center border bg-cyan-600 border-cyan-500 text-white">
+                              <span className="text-[10px] font-bold">✓</span>
+                            </div>
+                            <span className="font-mono font-bold text-xs bg-slate-950 px-2 py-0.5 rounded border border-slate-800 text-cyan-400">
+                              {customPath}
+                            </span>
+                            <span className="text-xs font-medium text-slate-400">— رابط تم حقنه يدوياً</span>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedPages(selectedPages.filter(p => p !== customPath));
+                            }}
+                            className="text-red-400 hover:text-red-300 p-1 text-xs"
+                          >
+                            حذف المسار
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="text-xs font-bold text-slate-400 text-right w-full sm:w-auto">
+                      عدد الروابط المجهزة للإرسال الفوري الآن: <span className="text-primary-400 font-black text-sm">{selectedPages.length}</span> روابط.
+                    </div>
+                    <button
+                      onClick={handleInstantIndexingExecute}
+                      disabled={indexingLoading || selectedPages.length === 0}
+                      className="w-full sm:w-auto py-3 px-6 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 disabled:from-slate-800 disabled:to-slate-800 disabled:opacity-40 text-white font-black text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary-600/10"
+                    >
+                      <RefreshCw size={14} className={indexingLoading ? "animate-spin" : ""} />
+                      <span>{indexingLoading ? "جاري الاستدعاء والاتصال بجوجل..." : "إطلاق طلب الأرشفة الفورية الصارم"}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* لوحة مراقبة الاستجابة وتقرير التليمتري الحي للبنية التحتية */}
+                <div className="bg-slate-900/20 border border-slate-800/60 p-6 rounded-2xl flex flex-col justify-between">
+                  <div>
+                    <h4 className="text-base font-black text-white mb-2 flex items-center gap-2">
+                      <Activity size={18} className="text-cyan-400" />
+                      <span>سجل استجابة جوجل لطلبات الأرشيف الفوري</span>
+                    </h4>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      عند ضغط زر الإطلاق، سيقوم خادم Sentryk بتوثيق اتصاله عبر الـ JWT لمفتاح Google Account المعتمد، وتوجيه إشعارات فورية لتحديث الفهرسة بالـ JSON المرتجع تالياً.
+                    </p>
+                  </div>
+
+                  {/* شاشة التليمتري والسجلات */}
+                  <div className="mt-4 flex-1 min-h-[180px] max-h-[220px] bg-slate-950 border border-slate-800/80 rounded-xl p-4 font-mono text-[10px] overflow-y-auto space-y-2 text-slate-400 shadow-inner">
+                    {!indexingTelemetry && !indexingLoading && (
+                      <div className="h-full flex items-center justify-center text-center text-slate-600 font-sans font-bold">
+                        ℹ️ في انتظار إطلاق الطلب لعرض تقارير الاستجابة الحية...
+                      </div>
+                    )}
+                    {indexingLoading && (
+                      <div className="space-y-1.5 animate-pulse">
+                        <p className="text-primary-400 font-bold">● CONNECTING_TO_GOOGLE_INDEXING_V3...</p>
+                        <p className="text-slate-500">● Authorizing JWT Client credentials safely...</p>
+                        <p className="text-slate-500">● Compiling target public layout structures...</p>
+                      </div>
+                    )}
+                    {indexingTelemetry && indexingTelemetry.success && (
+                      <div className="space-y-2">
+                        <p className="text-emerald-400 font-bold">● INDEXING_ENGINE_SUCCESS_COMPLIANT</p>
+                        <p className="text-slate-300">📊 الإجمالي المعالج: {indexingTelemetry.summary?.totalProcessed}</p>
+                        <p className="text-green-400">✅ تم بنجاح: {indexingTelemetry.summary?.successCount}</p>
+                        <p className="text-red-400">❌ فشل الإرسال: {indexingTelemetry.summary?.failedCount}</p>
+                        
+                        <div className="pt-2 border-t border-slate-800 space-y-1">
+                          <p className="text-[9px] text-slate-500 font-sans font-bold">تفاصيل العمليات الحية:</p>
+                          {indexingTelemetry.results?.map((res: any, idx: number) => (
+                            <div key={idx} className="flex flex-col border-b border-slate-900 pb-1 last:border-0">
+                              <span className="text-[9px] text-slate-300 truncate">{res.url}</span>
+                              <span className={res.status === "success" ? "text-emerald-500" : "text-red-500"}>
+                                └─ [{res.status.toUpperCase()}] {res.status === "success" ? "Notification published" : JSON.stringify(res.error)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {indexingTelemetry && !indexingTelemetry.success && (
+                      <div className="space-y-1.5">
+                        <p className="text-red-500 font-bold">● SYSTEM_CRITICAL_INDEXING_FAILED</p>
+                        <p className="text-red-400/90 font-bold">السبب: {indexingTelemetry.error}</p>
+                        <p className="text-slate-500">تأكد من تفعيل السيرفر لراوت /api/indexing ومن وجود ملف مفتاح الحساب السري في جذر المشروع.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
               </div>
             </div>
           )}
