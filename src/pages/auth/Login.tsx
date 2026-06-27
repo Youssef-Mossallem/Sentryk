@@ -33,28 +33,50 @@ export default function Login() {
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    // منع الريلود تماماً
+    // منع ريلود الصفحة الافتراضي تماماً
     e.preventDefault();
     e.stopPropagation(); 
     
     setLoading(true);
     setError('');
 
+    // تنظيف المدخلات وتأمين صيغة البريد الإلكتروني قبل الإرسال
+    const sanitizedData = {
+      email: formData.email.trim().toLowerCase(),
+      password: formData.password
+    };
+
     try {
-      const response = await api.post('/auth/login', formData);
+      const response = await api.post('/auth/login', sanitizedData);
       const data = response.data;
 
-      // تحديث الستور ببيانات المستخدم
-      setAuth(data.user, data.token, data.center);
-      
-      // التوجه لصفحة الخطط عند النجاح
-      navigate('/plans'); 
+      if (data.success) {
+        // تحديث الستور بشكل موحد ببيانات المستخدم، التوكن، والسنتر
+        setAuth(data.user, data.token, data.center);
+        
+        // =============================================================
+        // التوجيه الذكي بعد تحديث الـ Store (الإصلاح الأساسي)
+        // =============================================================
+        // نعطي الـ Zustand فرصة بسيطة لتحديث isPaid عبر checkSubscription()
+        setTimeout(() => {
+          const { isPaid } = useAuthStore.getState();
+          
+          if (isPaid) {
+            navigate('/dashboard', { replace: true });
+          } else {
+            navigate('/plans', { replace: true });
+          }
+        }, 80);
+
+      } else {
+        setError(data.error || 'فشلت عملية تسجيل الدخول، يرجى المحاولة مرة أخرى');
+      }
       
     } catch (err: any) {
-      // استخراج رسالة الخطأ بدقة من رد السيرفر
-      const errorMessage = err.response?.data?.message || err.response?.data?.error || 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
+      // استخراج رسالة الخطأ بدقة متناهية من رد السيرفر أو السقوط الشبكي
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
       setError(errorMessage);
-      console.error("Login Error:", err);
+      console.error("❌ Login Front-End Error:", err);
     } finally {
       setLoading(false);
     }
@@ -64,13 +86,13 @@ export default function Login() {
     <div className={darkMode ? 'dark' : ''}>
       <div className="min-h-screen bg-slate-50 dark:bg-[#030712] transition-colors duration-700 text-right flex items-center justify-center p-6 relative overflow-hidden" dir="rtl">
         
-        {/* خلفية جمالية متحركة */}
+        {/* خلفية جمالية متحركة مستوحاة من هوية سنترك الاحترافية */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-600/5 rounded-full blur-[120px]"></div>
             <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary-600/10 rounded-full blur-[120px]"></div>
         </div>
 
-        {/* زر تبديل الثيم */}
+        {/* زر تبديل الثيم المستقر */}
         <button 
           type="button"
           onClick={toggleTheme}
@@ -102,6 +124,7 @@ export default function Login() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             
+            {/* البريد الإلكتروني */}
             <div className="space-y-2">
               <label className="text-sm font-black dark:text-slate-400 pr-2">البريد الإلكتروني</label>
               <div className="relative group">
@@ -109,7 +132,7 @@ export default function Login() {
                 <input 
                   required
                   type="email" 
-                  className="w-full bg-slate-100/50 dark:bg-slate-800/50 border border-transparent focus:border-primary-600 dark:focus:border-primary-600 rounded-2xl py-5 pr-14 pl-5 outline-none transition-all font-bold dark:text-white text-left"
+                  className="w-full bg-slate-100/50 dark:bg-slate-800/50 border border-transparent focus:border-primary-600 dark:focus:border-primary-600 rounded-2xl py-5 pr-14 pl-5 outline-none transition-all font-bold dark:text-white text-left tracking-wide"
                   placeholder="name@example.com"
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
@@ -117,6 +140,7 @@ export default function Login() {
               </div>
             </div>
 
+            {/* كلمة المرور */}
             <div className="space-y-2">
               <div className="flex justify-between items-center px-2">
                 <label className="text-sm font-black dark:text-slate-400">كلمة المرور</label>
@@ -133,7 +157,7 @@ export default function Login() {
                 <input 
                   required
                   type={showPassword ? 'text' : 'password'} 
-                  className="w-full bg-slate-100/50 dark:bg-slate-800/50 border border-transparent focus:border-primary-600 dark:focus:border-primary-600 rounded-2xl py-5 pr-14 pl-14 outline-none transition-all font-bold dark:text-white text-left"
+                  className="w-full bg-slate-100/50 dark:bg-slate-800/50 border border-transparent focus:border-primary-600 dark:focus:border-primary-600 rounded-2xl py-5 pr-14 pl-14 outline-none transition-all font-bold dark:text-white text-left tracking-widest"
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={(e) => setFormData({...formData, password: e.target.value})}
@@ -141,7 +165,7 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Error Message Section */}
+            {/* عرض رسائل الخطأ بـ AnimatePresence لمنع قفز عناصر الواجهة فجأة */}
             <AnimatePresence mode="wait">
               {error && (
                 <motion.div 
@@ -158,7 +182,7 @@ export default function Login() {
               )}
             </AnimatePresence>
 
-            {/* Submit Button */}
+            {/* زر الإرسال والحالة التشغيلية التفاعلية */}
             <button 
               type="submit"
               disabled={loading}
@@ -174,7 +198,7 @@ export default function Login() {
               )}
             </button>
 
-            {/* Create Account Divider */}
+            {/* فاصل إنشاء حساب جديد */}
             <div className="flex items-center gap-4 py-4">
                 <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1"></div>
                 <span className="text-sm font-bold text-slate-400">أو</span>
@@ -186,7 +210,7 @@ export default function Login() {
                 className="w-full py-5 border-2 border-slate-200 dark:border-slate-800 dark:text-white rounded-[1.5rem] font-black text-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-3 group"
             >
                 <UserPlus size={20} className="group-hover:scale-110 transition-transform text-primary-600" />
-                <span>إنشاء حساب جديد</span>
+                <span>إنشاء حساب سنتر جديد</span>
             </Link>
 
           </form>

@@ -12,10 +12,13 @@ import {
   UserPlus,
   Users,
   Menu,
+  TableProperties,
   X,
   PhoneCall,
   Sun,
-  Moon
+  Moon,
+  Camera,
+  Calendar
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -24,10 +27,13 @@ import { useThemeStore } from '../../store/useThemeStore';
 const menuItems = [
   { icon: <LayoutDashboard size={20} />, label: 'لوحة التحكم', path: '/dashboard', roles: ['ADMIN'] },
   { icon: <Users size={20} />, label: 'الطلاب', path: '/students', roles: ['ADMIN', 'SECRETARY'] },
-  { icon: <BookOpen size={20} />, label: 'المواد الدراسية', path: '/subjects', roles: ['ADMIN'] },
-  { icon: <Layers size={20} />, label: 'المجموعات', path: '/groups', roles: ['ADMIN', 'SECRETARY'] },
+  { icon: <BookOpen size={20} />, label: ' المدرسين والمواد', path: '/subjects', roles: ['ADMIN'] },
+  { icon: <Layers size={20} />, label: 'القاعات والغرف', path: '/groups', roles: ['ADMIN', 'SECRETARY'] },
+  { icon: <Calendar size={20} />, label: 'الحصص والمجموعات', path: '/sessions', roles: ['ADMIN', 'SECRETARY'] },
+  { icon: <TableProperties size={20} />, label: 'الجدول الزمني', path: '/schedule', roles: ['ADMIN', 'SECRETARY'] },
   { icon: <UserPlus size={20} />, label: ' المستخدمين', path: '/users', roles: ['ADMIN'] },
-  { icon: <MessageSquare size={20} />, label: 'محفظة SMS', path: '/sms-wallet', roles: ['ADMIN'] },
+  { icon: <MessageSquare size={20} />, label: 'محفظة whatsapp', path: '/sms-wallet', roles: ['ADMIN'] },
+  { icon: <Camera size={20} />, label: 'الحضور والغياب', path: '/attendance', roles: ['ADMIN', 'SECRETARY'] },
   { icon: <History size={20} />, label: 'سجل النشاط', path: '/activity-log', roles: ['ADMIN'] },
   { icon: <PhoneCall size={20} />, label: 'تواصل معنا', path: '/contact-dash', roles: ['ADMIN', 'SECRETARY'] },
 ];

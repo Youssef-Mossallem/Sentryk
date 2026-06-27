@@ -12,36 +12,72 @@ export default function ProtectedRoute({
   requiresPaid = false,
   allowedRoles 
 }: ProtectedRouteProps) {
-  const { isAuthenticated, isPaid, user } = useAuthStore();
+  const { isAuthenticated, isPaid, user, center } = useAuthStore();
   const location = useLocation();
 
-  // 1. فحص تسجيل الدخول: إذا لم يكن مسجلاً، اذهب لصفحة الدخول
+  // ===========================================================================
+  // 1. الصفحات العامة (مثل Login/Signup) — إذا كان مسجل دخول → وجهه حسب حالته
+  // ===========================================================================
+  if (!requiresAuth && isAuthenticated && user) {
+    if (user.role === 'SECRETARY') {
+      return <Navigate to="/students" replace />;
+    }
+    // ADMIN → يروح حسب حالة الاشتراك
+    return isPaid ? 
+      <Navigate to="/dashboard" replace /> : 
+      <Navigate to="/plans" replace />;
+  }
+
+  // ===========================================================================
+  // 2. يجب تسجيل الدخول أولاً
+  // ===========================================================================
   if (requiresAuth && !isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // 2. فحص الصلاحيات (Roles): إذا كان الدور غير مسموح به لهذه الصفحة
-  if (allowedRoles && user && !allowedRoles.includes(user.role as any)) {
-    // إذا كان سكرتير يحاول دخول صفحة أدمن، وجهه لصفحة الطلاب (المسموحة له)
+  // ===========================================================================
+  // 3. فحص الصلاحيات حسب الدور (RBAC)
+  // ===========================================================================
+  if (requiresAuth && allowedRoles && user && !allowedRoles.includes(user.role as any)) {
+    console.warn(`🔒 محاولة وصول غير مصرح بها - User ID: ${user.id} | Role: ${user.role}`);
+    
     if (user.role === 'SECRETARY') {
       return <Navigate to="/students" replace />;
     }
-    // لغير ذلك، ارجع للصفحة الرئيسية
     return <Navigate to="/" replace />;
   }
 
-  // 3. فحص الاشتراك المدفوع (Paid Status)
-  if (requiresPaid && !isPaid) {
-    // إذا كان أدمن وغير دافع، وجهه لصفحة الخطط
-    if (user?.role === 'ADMIN') {
-      return <Navigate to="/plans" replace />;
+  // ===========================================================================
+  // 4. فحص حالة الاشتراك (الأهم - Subscription Guard)
+  // ===========================================================================
+  if (requiresAuth && requiresPaid) {
+    let hasActiveAccess = isPaid;
+
+    // تحقق إضافي دقيق للـ TRIAL (حتى لو الـ Store لم يحدث بعد)
+    if (!hasActiveAccess && center?.plan === 'TRIAL') {
+      if (center.trialStartedAt && !center.trialUsed) {
+        const trialStart = new Date(center.trialStartedAt);
+        const now = new Date();
+        const diffInDays = (now.getTime() - trialStart.getTime()) / (1000 * 60 * 60 * 24);
+        
+        hasActiveAccess = diffInDays >= 0 && diffInDays <= 14;
+      }
     }
-    
-    // إذا كان سكرتير وغير دافع (بسبب انتهاء اشتراك السنتر مثلاً)
-    // لا نوجهه للخطط لأنه ليس لديه صلاحية الدفع، نوجهه لصفحة الطلاب أو الدعم
-    return <Navigate to="/contact" replace />;
+
+    if (!hasActiveAccess) {
+      console.warn(`🚫 الاشتراك منتهي أو الفترة التجريبية انتهت - Center ID: ${center?.id}`);
+
+      if (user?.role === 'ADMIN') {
+        return <Navigate to="/plans" replace />;
+      }
+      
+      // للسكرتارية
+      return <Navigate to="/contact" state={{ error: 'expired_center' }} replace />;
+    }
   }
 
-  // إذا اجتاز كل الفحوصات، اعرض محتوى الصفحة
+  // ===========================================================================
+  // 5. كل الفحوصات نجحت → عرض الصفحة
+  // ===========================================================================
   return <Outlet />;
 }

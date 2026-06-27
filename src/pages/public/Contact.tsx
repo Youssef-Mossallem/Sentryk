@@ -14,13 +14,12 @@ import {
 } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet'; // 🛡️ تخصيص رأس الصفحة ومحركات البحث وعناكب الـ AI
 import { useThemeStore } from '../../store/useThemeStore';
-import { Helmet } from "react-helmet-async";
-
 
 export default function Contact() {
   const { darkMode, toggleTheme } = useThemeStore();
-  
+
   // States للمدخلات والحالة
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -60,118 +59,59 @@ export default function Contact() {
     }
   };
 
-  return (
-    <>
-    <Helmet>
-  <title>
-    تواصل معنا | SENTRYK - الدعم الفني واستفسارات السناتر التعليمية
-  </title>
-
-  <meta
-    name="description"
-    content="تواصل مع فريق SENTRYK للحصول على الدعم الفني، الاستفسارات التجارية، المساعدة التقنية، أو معرفة تفاصيل الاشتراكات وخدمات إدارة السناتر التعليمية."
-  />
-
-  <meta
-    name="keywords"
-    content="
-      تواصل معنا,
-      Contact SENTRYK,
-      دعم فني سنترك,
-      استفسارات سنترك,
-      نظام إدارة السناتر,
-      الدعم الفني,
-      مركز المساعدة,
-      إدارة المراكز التعليمية,
-      Educational Management System,
-      Student Management System,
-      SaaS Education,
-      Help Center,
-      Technical Support,
-      Customer Support
-    "
-  />
-
-  <meta name="author" content="Youssef Ahmed Mossallem" />
-  <meta name="creator" content="Youssef Ahmed Mossallem" />
-  <meta name="publisher" content="SENTRYK" />
-
-  <meta
-    name="robots"
-    content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1"
-  />
-
-  <meta name="googlebot" content="index,follow" />
-
-  <link
-    rel="canonical"
-    href="https://sentryk.vercel.app/contact"
-  />
-
-  {/* Open Graph */}
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="SENTRYK" />
-  <meta property="og:locale" content="ar_EG" />
-
-  <meta
-    property="og:title"
-    content="تواصل معنا | SENTRYK"
-  />
-
-  <meta
-    property="og:description"
-    content="تواصل مع فريق SENTRYK للدعم الفني والاستفسارات والمساعدة التقنية الخاصة بإدارة السناتر التعليمية."
-  />
-
-  <meta
-    property="og:url"
-    content="https://sentryk.vercel.app/contact"
-  />
-
-  {/* Twitter */}
-  <meta
-    name="twitter:card"
-    content="summary_large_image"
-  />
-
-  <meta
-    name="twitter:title"
-    content="تواصل معنا | SENTRYK"
-  />
-
-  <meta
-    name="twitter:description"
-    content="فريق SENTRYK جاهز للرد على جميع استفساراتك وتقديم الدعم الفني والمساعدة."
-  />
-
-  {/* SEO Extras */}
-  <meta name="language" content="Arabic" />
-  <meta name="geo.region" content="EG" />
-  <meta name="geo.country" content="Egypt" />
-  <meta name="rating" content="general" />
-
-  {/* Structured Data */}
-  <script type="application/ld+json">
-    {JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "ContactPage",
-      name: "Contact SENTRYK",
-      url: "https://sentryk.vercel.app/contact",
-      description:
-        "صفحة التواصل الرسمية لمنصة SENTRYK للدعم الفني والاستفسارات.",
-      publisher: {
-        "@type": "Organization",
-        name: "SENTRYK"
-      },
-      author: {
-        "@type": "Person",
-        name: "Youssef Ahmed Mossallem"
+  // 🤖 البيانات المهيكلة المخصصة لعناكب الـ AI ومحركات البحث (Schema.org JSON-LD)
+  const contactSchema = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "اتصل بنا | الدعم الفني والمبيعات لمنظومة Sentryk Pro",
+    "description": "قناة التواصل الرسمية المباشرة مع المطورين وفريق الدعم الفني لمنصة سنتريك التعليمية السحابية لإدارة السناتر والمراكز التعليمية.",
+    "url": "https://sentryk.vercel.app/contact",
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "Sentryk Pro",
+      "url": "https://sentryk.vercel.app",
+      "logo": "https://sentryk.vercel.app/favicon.svg",
+      "image": "https://sentryk.vercel.app/og-image.png",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "ahmadmoslem35@gmail.com",
+        "contactType": "customer support",
+        "areaServed": "EG",
+        "availableLanguage": ["Arabic", "English"]
       }
-    })}
-  </script>
-</Helmet>
+    }
+  };
+
+  return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#030712] transition-colors duration-700 text-right overflow-x-hidden" dir="rtl">
-      
+
+      {/* 🚀 الـ Helmet السيادي الفاخر - تهيئة مطلقة للأرشفة والفهرسة والذكاء الاصطناعي */}
+      <Helmet>
+        <title>اتصل بنا | الدعم الفني والاستشارات لمنظومة SENTRYK PRO</title>
+        <meta name="title" content="اتصل بنا | الدعم الفني والاستشارات لمنظومة SENTRYK PRO" />
+        <meta name="description" content="تواصل مباشرة مع فريق الدعم الفني والمبيعات لمنصة سنتريك (Sentryk Pro) السحابية. اطرح استفساراتك التقنية حول إدارة السناتر، أتمتة رسائل الواتساب Meta API، والحلول البرمجية الذكية." />
+        <meta name="keywords" content="اتصل بسنتريك, دعم Sentryk Pro, مبيعات سنترك, تواصل مع مطور سنترك, أحمد مسلم, يوسف مسلم, حجز باقة البرو, بريد Sentryk, إدارة المراكز التعليمية مصر" />
+        <meta name="robots" content="index, follow" />
+
+        {/* Open Graph (Facebook / LinkedIn) */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://sentryk.vercel.app/contact" />
+        <meta property="og:title" content="اتصل بنا | الدعم الفني والاستشارات لمنظومة SENTRYK PRO" />
+        <meta property="og:description" content="فريق سنتريك الاستشاري جاهز للرد على استفساراتك الإدارية والتقنية. تواصل معنا الآن لنقل مركزك التعليمي إلى السحابة." />
+        <meta property="og:image" content="https://sentryk.vercel.app/og-image.png" />
+
+        {/* Twitter Cards */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="اتصل بنا | الدعم الفني والاستشارات لمنظومة SENTRYK PRO" />
+        <meta name="twitter:description" content="تواصل معنا مباشرة عبر نموذج المراسلة الفوري وسنقوم بالرد عليك في أقل من ساعتين." />
+        <meta name="twitter:image" content="https://sentryk.vercel.app/og-image.png" />
+
+        {/* 🧠 حقن البيانات المهيكلة الـ Schema للـ AI والنظم الذكية لتوليد المقتطفات المميزة */}
+        <script type="application/ld+json">
+          {JSON.stringify(contactSchema)}
+        </script>
+      </Helmet>
+
       {/* --- Navbar --- */}
       <nav className="fixed top-0 w-full z-50 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 bg-white/40 dark:bg-[#030712]/40">
         <div className="max-w-7xl mx-auto px-8 h-20 flex justify-between items-center">
@@ -183,7 +123,7 @@ export default function Contact() {
                 <img src="/favicon.svg" alt="Sentryk Logo" className="w-7 h-7 object-contain" />
               </div>
             </div>
-            <span className="text-2xl font-black tracking-tighter dark:text-white uppercase font-display">SENTRYK</span>
+            <span className="text-2xl font-black tracking-tighter dark:text-white uppercase font-display">SENTRYK <span className="text-primary-600 text-sm align-super">PRO</span></span>
           </div>
 
           <div className="flex items-center gap-6">
@@ -200,9 +140,9 @@ export default function Contact() {
 
       <section className="pt-44 pb-20 px-6">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-start">
-          
+
           {/* --- Left Side: Information --- */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             className="space-y-12"
@@ -236,41 +176,41 @@ export default function Contact() {
           </motion.div>
 
           {/* --- Right Side: Contact Form --- */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             className="relative"
           >
             <div className="p-8 md:p-12 rounded-[3.5rem] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none relative z-10">
               <form onSubmit={handleSubmit} className="space-y-6">
-                
+
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-black dark:text-slate-300 pr-2">الاسم </label>
                     <div className="relative group">
                       <User className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={18} />
-                      <input 
+                      <input
                         required
-                        type="text" 
+                        type="text"
                         placeholder="أحمد محمد"
                         className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 pr-12 pl-4 outline-none focus:border-primary-600 dark:focus:border-primary-600 transition-all font-bold dark:text-white"
                         value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <label className="text-sm font-black dark:text-slate-300 pr-2">البريد الإلكتروني</label>
                     <div className="relative group">
                       <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={18} />
-                      <input 
+                      <input
                         required
-                        type="email" 
+                        type="email"
                         placeholder="name@example.com"
                         className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 pr-12 pl-4 outline-none focus:border-primary-600 dark:focus:border-primary-600 transition-all font-bold dark:text-white text-left"
                         value={formData.email}
-                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       />
                     </div>
                   </div>
@@ -280,43 +220,43 @@ export default function Contact() {
                   <label className="text-sm font-black dark:text-slate-300 pr-2">موضوع الرسالة</label>
                   <div className="relative group">
                     <Hash className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={18} />
-                    <input 
+                    <input
                       required
-                      type="text" 
+                      type="text"
                       placeholder="استفسار عن باقة البرو"
                       className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 pr-12 pl-4 outline-none focus:border-primary-600 dark:focus:border-primary-600 transition-all font-bold dark:text-white"
                       value={formData.subject}
-                      onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-black dark:text-slate-300 pr-2">رسالتك</label>
-                  <textarea 
+                  <textarea
                     required
                     rows={5}
                     placeholder="اكتب لنا استفسارك بكل وضوح..."
                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[2rem] py-4 px-6 outline-none focus:border-primary-600 dark:focus:border-primary-600 transition-all font-bold dark:text-white resize-none"
                     value={formData.message}
-                    onChange={(e) => setFormData({...formData, message: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   ></textarea>
                 </div>
 
-                <button 
+                <button
                   disabled={status === 'loading'}
                   className="w-full py-5 bg-primary-600 text-white rounded-2xl font-black text-xl shadow-xl shadow-primary-600/20 hover:bg-primary-700 hover:-translate-y-1 transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed group overflow-hidden"
                 >
                   <AnimatePresence mode="wait">
                     {status === 'loading' ? (
-                      <motion.div 
-                        key="loading" 
+                      <motion.div
+                        key="loading"
                         initial={{ y: 20 }} animate={{ y: 0 }} exit={{ y: -20 }}
                         className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"
                       />
                     ) : (
-                      <motion.div 
-                        key="idle" 
+                      <motion.div
+                        key="idle"
                         initial={{ y: 20 }} animate={{ y: 0 }} exit={{ y: -20 }}
                         className="flex items-center gap-3"
                       >
@@ -342,7 +282,7 @@ export default function Contact() {
                 </AnimatePresence>
               </form>
             </div>
-            
+
             {/* Background Accent */}
             <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-primary-600/10 rounded-full blur-3xl -z-10 animate-pulse"></div>
           </motion.div>
@@ -355,5 +295,5 @@ export default function Contact() {
       </div>
 
     </div>
-</>  );
+  );
 }

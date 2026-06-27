@@ -1,6 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  keyframes: {
+    scan: {
+      "0%, 100%": { top: "5%" },
+      "50%": { top: "90%" },
+    },
+  },
   darkMode: "class", // تفعيل الدارك مود عن طريق كلاس
   theme: {
     extend: {
@@ -25,7 +31,7 @@ export default {
         },
       },
       fontFamily: {
-       sans: ["Readex Pro", "sans-serif"],
+        sans: ["Readex Pro", "sans-serif"],
       },
     },
   },
