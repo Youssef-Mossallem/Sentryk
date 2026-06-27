@@ -290,7 +290,7 @@ export default function Plans() {
           }
           setUiSuccess(response.data?.message || "تم تفعيل الفترة التجريبية بنجاح، جاري توجيهكم...");
           setSelectedPlan(null); 
-          setTimeout(() => { navigate('/dashboard'); }, 800); 
+        setTimeout(() => { window.location.href = '/dashboard'; }, 800);
         }
       } catch (err: any) {
         setUiError(err?.response?.data?.error || "تعذر تفعيل الفترة التجريبية حالياً.");
@@ -330,7 +330,7 @@ export default function Plans() {
           }
 
           setSelectedPlan(null);
-          setTimeout(() => { navigate('/dashboard'); }, 1000);
+         setTimeout(() => { window.location.href = '/dashboard'; }, 1000);
           return;
         }
 
