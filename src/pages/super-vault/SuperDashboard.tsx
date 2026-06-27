@@ -299,11 +299,9 @@ export default function SuperDashboard() {
 
     try {
       // استدعاء مباشرة لراوت الخدمة العام في الـ Backend
-try {
-  // استدعاء مباشرة لراوت الخدمة العام في الـ Backend
-  const response = await axios.post("/api/indexing/request-instant", {
-    urls: fullUrlsToIndex
-  });
+      const response = await axios.post("/api/indexing/request-instant", {
+        urls: fullUrlsToIndex
+      });
 
       setIndexingTelemetry({
         success: true,
