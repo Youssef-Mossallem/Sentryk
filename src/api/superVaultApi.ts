@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // جلب الرابط من متغيرات البيئة بدعم كامل لـ Vite (VITE_API_URL) أو React App (REACT_APP_API_URL)
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_URL = "https://sentrykbackend.onrender.com/api";
 
 /**
  * إنشاء مثيل مخصص ومعزول تماماً لطلبات الخزنة الكبرى
