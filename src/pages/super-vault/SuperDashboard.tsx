@@ -299,13 +299,9 @@ export default function SuperDashboard() {
 
     try {
       // استدعاء مباشرة لراوت الخدمة العام في الـ Backend
- try {
-  // 🚀 تحديد رابط الباك إند ديناميكياً (محلياً أو إنتاجياً) لضمان عدم حدوث خطأ 405
-  const backendBaseUrl = window.location.hostname === "localhost"
-    ? "http://localhost:5000" // ⚠️ تأكد من تغيير 5000 إلى منفذ (Port) خادم الـ Express الخاص بك محلياً
-    : "https://sentrykbackend.onrender.com"; // ⚠️ ضع هنا رابط السيرفر الفعلي الإنتاجي إذا كان مرفوعاً أونلاين
-
-  const response = await axios.post(`${backendBaseUrl}/api/indexing/request-instant`, {
+try {
+  // استدعاء مباشرة لراوت الخدمة العام في الـ Backend
+  const response = await axios.post("/api/indexing/request-instant", {
     urls: fullUrlsToIndex
   });
 
