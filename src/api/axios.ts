@@ -4,8 +4,8 @@ import { offlineStore } from '../utils/offlineStore';
 
 // إنشاء نسخة Axios المخصصة للمنصة بنظام حماية زمني متطور
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api', // استبدل هذا بالرابط الفعلي للسيرفر الخاص بك في الإنتاج
-  timeout: 10000, // 10 ثوانٍ كحد أقصى للطلب قبل اعتباره معلقاً بفعل الشبكة
+  baseURL: 'https://sentrykbackend.onrender.com/api', // استبدل هذا بالرابط الفعلي للسيرفر الخاص بك في الإنتاج
+  timeout: 100000, // 10 ثوانٍ كحد أقصى للطلب قبل اعتباره معلقاً بفعل الشبكة
 });
 
 // دمج نظام إعادة المحاولة التلقائي في حالة تذبذب الشبكة السريع (Transient Network Drops)
