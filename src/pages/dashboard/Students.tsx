@@ -1,35 +1,39 @@
-import { motion } from "framer-motion";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  AlertCircle,
-  BookOpen,
-  Calendar,
-  Check,
-  ChevronDown,
-  Clock,
-  Download,
-  Edit2,
-  Filter,
-  GraduationCap,
-  Layers,
-  Loader2,
-  Phone,
-  Plus,
-  Printer,
-  QrCode,
-  RefreshCcw,
-  Search,
-  Sparkles,
-  Trash2,
   User,
   UserCheck,
   UserX,
+  Plus,
+  Trash2,
+  Edit2,
+  QrCode,
+  RefreshCcw,
+  Search,
+  Filter,
+  Check,
+  X,
+  Phone,
+  GraduationCap,
+  Layers,
+  BookOpen,
+  Calendar,
+  Clock,
+  Printer,
+  Download,
+  AlertCircle,
+  Loader2,
+  Sparkles,
   Wifi,
   WifiOff,
-  X,
   Home,
-  BookMarked
+  BookMarked,
+  Info,
+  DollarSign,
+  HelpCircle,
+  Hash,
+  ChevronDown
 } from "lucide-react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast, Toaster } from "sonner";
 import api from "../../api/axios";
 
@@ -70,18 +74,16 @@ const SUB_TYPES: Record<string, string> = {
   COURSE: "كورس كامل",
 };
 
-// مصفوفات آمنة لضمان استقرار العرض دون انهيار الواجهة
-const safeArray = <T,>(value: unknown): T[] => Array.isArray(value) ? (value as T[]) : [];
-
+const safeArray = <T,>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
 const normalizeStage = (value: string) => String(value || "").toUpperCase().trim();
 
-// مفسر أسعار الحصص الذكي بناءً على إعدادات المدرس والمرحلة
+// مفسر أسعار الحصص والاشتراكات الذكي بناءً على إعدادات المدرس والمرحلة
 const getSessionPriceForStudent = (
   session: any,
   stage: string,
   grade: number,
   subscriptionType: string
-) => {
+): number => {
   const configs = safeArray<any>(session?.teacher?.priceConfigs);
   const stageKey = normalizeStage(stage);
   const typeKey = String(subscriptionType || "").toUpperCase();
@@ -113,12 +115,66 @@ const getSessionPriceForStudent = (
 };
 
 // =============================================
+// مكون مربعات الشرح المنسقة والمريحة للعين (System Docs Component)
+// =============================================
+const SystemGuideBox = () => {
+  const [isVisible, setIsVisible] = useState(true);
+
+  if (!isVisible) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900/60 dark:to-slate-900/40 border border-blue-100 dark:border-slate-800 p-6 rounded-[2rem] space-y-4 shadow-sm relative overflow-hidden"
+    >
+      <div className="absolute left-0 bottom-0 text-blue-500/5 dark:text-blue-500/10 -mb-8 -ml-8 pointer-events-none">
+        <HelpCircle size={180} />
+      </div>
+      <div className="flex justify-between items-center border-b border-blue-200/50 dark:border-slate-800 pb-3">
+        <div className="flex items-center gap-2.5 text-blue-800 dark:text-blue-400">
+          <Info size={20} />
+          <h3 className="text-sm font-black tracking-wide">الدليل الإرشادي الموحد لإدارة حسابات الطلاب (Sentryk Core)</h3>
+        </div>
+        <button
+          onClick={() => setIsVisible(false)}
+          className="text-slate-400 hover:text-rose-500 p-1 rounded-lg transition-colors"
+          title="إغلاق الدليل مؤقتاً"
+        >
+          <X size={18} />
+        </button>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+        <div className="space-y-1.5 bg-white dark:bg-slate-950 p-4 rounded-2xl border dark:border-slate-800/80 shadow-inner">
+          <p className="font-black text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+            <QrCode size={14} /> 1. كروت الحضور الرقمية الذكية
+          </p>
+          <p>عند إضافة أي طالب جديد، يتم فوراً استخدام محرك الـ Canvas بالباك إند لإنتاج بطاقة هوية مخصصة ومحمية برمز مشفر فريد. يتم حفظها سحابياً وتوفير رابط قصير لها لضمان سهولة الطباعة واستخدامها عبر المساعدين عند بوابات القاعات.</p>
+        </div>
+        <div className="space-y-1.5 bg-white dark:bg-slate-950 p-4 rounded-2xl border dark:border-slate-800/80 shadow-inner">
+          <p className="font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+            <DollarSign size={14} /> 2. تحديث نظام الفواتير الشامل
+          </p>
+          <p>يدعم السيستم أنواع اشتراكات متعددة. في حالة اختيار نظام <span className="font-black">"بالحصة"</span>، يتيح لك النظام إدخال عدد الحصص المشحونة ليقوم بضربها تلقائياً في السعر الفردي المهيأ من المدرس، وحفظ رصيد الطالب بدقة متناهية لمنع التعارضات المالية.</p>
+        </div>
+        <div className="space-y-1.5 bg-white dark:bg-slate-950 p-4 rounded-2xl border dark:border-slate-800/80 shadow-inner">
+          <p className="font-black text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+            <Clock size={14} /> 3. تقنية العمل أوفلاين والمزامنة
+          </p>
+          <p>في حال انقطاع اتصالك بالإنترنت، لا داعي للقلق. يعمل النظام بحفظ كافة القيود، الطلاب، وعمليات السداد محلياً بطابور معزول، وفور استعادة الاتصال يقوم السيرفر بمعالجتها كحزمة متكاملة (Bulk Sync) وإرسال إشعارات الواتساب تلقائياً.</p>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// =============================================
 // مودال استعراض وطباعة بطاقات الـ QR الملقمة من الباك إند
 // =============================================
 const QRManagementModal = ({ isOpen, onClose, student }: any) => {
   if (!isOpen || !student) return null;
 
-  // الحصول على رابط الكارت الذكي المولد من الباك إند عبر Cloudinary أو الرابط القصير الموحد
   const cardImageUrl = student.qrImageUrl || student.subscriptions?.[student.subscriptions.length - 1]?.qrImageUrl;
 
   const handleDownloadQR = () => {
@@ -126,7 +182,6 @@ const QRManagementModal = ({ isOpen, onClose, student }: any) => {
       toast.error("رابط بطاقة الـ QR غير متوفر حالياً ⏳");
       return;
     }
-    // فتح الرابط في نافذة جديدة لتحميله أو حفظه بأعلى جودة
     window.open(cardImageUrl, "_blank");
     toast.success("تم فتح بطاقة الحضور بجودتها الأصلية للتحميل 🎫");
   };
@@ -181,9 +236,9 @@ const QRManagementModal = ({ isOpen, onClose, student }: any) => {
 
         {cardImageUrl ? (
           <div className="relative group overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-2 shadow-inner">
-            <img 
-              src={cardImageUrl} 
-              alt={`Sentryk Smart Card - ${student.name}`} 
+            <img
+              src={cardImageUrl}
+              alt={`Sentryk Smart Card - ${student.name}`}
               className="w-full h-auto rounded-xl object-contain mx-auto max-h-[450px]"
               loading="lazy"
             />
@@ -192,7 +247,7 @@ const QRManagementModal = ({ isOpen, onClose, student }: any) => {
           <div className="p-12 bg-slate-950 rounded-2xl border border-slate-800 border-dashed text-center space-y-3">
             <AlertCircle className="text-amber-500 mx-auto animate-pulse" size={40} />
             <p className="text-xs font-bold text-slate-400">جاري توليد وسحب كارت الهوية المطور من السيرفر...</p>
-            <p className="text-[10px] text-slate-500">إذا كنت في الوضع المحلي أوفلاين، فسيتم الرفع والتوليد فور الاتصال.</p>
+            <p className="text-[10px] text-slate-500">سيظهر الرابط فوراً بمجرد معالجة محرك الصور في الخلفية.</p>
           </div>
         )}
 
@@ -225,7 +280,7 @@ const QRManagementModal = ({ isOpen, onClose, student }: any) => {
 };
 
 // =============================================
-// مودال إضافة وقيد الطلاب (يدعم التعدد والأوفلاين التام)
+// مودال إضافة وقيد الطلاب (يدعم التعدد، نظام الحصص المطور، والأوفلاين)
 // =============================================
 const StudentModal = ({ isOpen, onClose, onSubmit, initialData, sessions, isOnline }: any) => {
   const [loading, setLoading] = useState(false);
@@ -238,6 +293,7 @@ const StudentModal = ({ isOpen, onClose, onSubmit, initialData, sessions, isOnli
     stage: "HIGH",
     grade: 1,
     subscriptionType: "MONTHLY",
+    totalSessions: 4, // القيمة الافتراضية لشحن الحصص عند اختيار PER_SESSION
     selectedSessions: [] as number[],
   });
 
@@ -248,8 +304,8 @@ const StudentModal = ({ isOpen, onClose, onSubmit, initialData, sessions, isOnli
       const lastSub = initialData.subscriptions?.[initialData.subscriptions.length - 1];
       const currentSessionIds = lastSub
         ? safeArray<any>(lastSub.enrolledSessions || lastSub.items)
-            .map((item: any) => Number(item.sessionId || item.session?.id))
-            .filter((id: number) => !isNaN(id) && id > 0)
+          .map((item: any) => Number(item.sessionId || item.session?.id))
+          .filter((id: number) => !isNaN(id) && id > 0)
         : [];
 
       setFormData({
@@ -258,6 +314,7 @@ const StudentModal = ({ isOpen, onClose, onSubmit, initialData, sessions, isOnli
         stage: initialData.stage || "HIGH",
         grade: initialData.grade || 1,
         subscriptionType: lastSub?.subscriptionType || "MONTHLY",
+        totalSessions: lastSub?.totalSessions || 4,
         selectedSessions: currentSessionIds,
       });
       setIsBatchMode(false);
@@ -268,6 +325,7 @@ const StudentModal = ({ isOpen, onClose, onSubmit, initialData, sessions, isOnli
         stage: "HIGH",
         grade: 1,
         subscriptionType: "MONTHLY",
+        totalSessions: 4,
         selectedSessions: [],
       });
       setBatchRows([{ name: "", phone: "" }]);
@@ -304,12 +362,19 @@ const StudentModal = ({ isOpen, onClose, onSubmit, initialData, sessions, isOnli
     );
   }, [availableSessions, sessionSearch]);
 
+  // احتساب السعر المطور والمطابق لتحديث السيرفر بالضرب في عدد الحصص
   const singleCalculatedPrice = useMemo(() => {
     return formData.selectedSessions.reduce((total, sId) => {
       const sessionItem = sessions.find((s: any) => s.id === sId);
-      return total + getSessionPriceForStudent(sessionItem, formData.stage, formData.grade, formData.subscriptionType);
+      const basePrice = getSessionPriceForStudent(sessionItem, formData.stage, formData.grade, formData.subscriptionType);
+
+      // التحديث السعري المطور: إذا كان النظام بالحصة، نضرب سعر الحصة الفردية في عدد الحصص المطلوبة
+      if (formData.subscriptionType === "PER_SESSION") {
+        return total + (basePrice * (Number(formData.totalSessions) || 1));
+      }
+      return total + basePrice;
     }, 0);
-  }, [formData.selectedSessions, formData.stage, formData.grade, formData.subscriptionType, sessions]);
+  }, [formData.selectedSessions, formData.stage, formData.grade, formData.subscriptionType, formData.totalSessions, sessions]);
 
   const totalLivePrice = useMemo(() => {
     if (!isBatchMode) return singleCalculatedPrice;
@@ -336,7 +401,7 @@ const StudentModal = ({ isOpen, onClose, onSubmit, initialData, sessions, isOnli
       if (isBatchMode) {
         const activeStudents = batchRows.filter((r) => r.name.trim() && r.phone.trim());
         if (activeStudents.length === 0) {
-          toast.error("يرجى إدخال بيانات طالب واحد على الأثل 🛑");
+          toast.error("يرجى إدخال بيانات طالب واحد على الأقل 🛑");
           setLoading(false);
           return;
         }
@@ -348,11 +413,11 @@ const StudentModal = ({ isOpen, onClose, onSubmit, initialData, sessions, isOnli
           grade: Number(formData.grade),
           subscriptions: formData.selectedSessions.length > 0
             ? [{
-                subscriptionType: formData.subscriptionType,
-                items: formData.selectedSessions.map((sessionId) => ({ sessionId })),
-              }]
+              subscriptionType: formData.subscriptionType,
+              items: formData.selectedSessions.map((sessionId) => ({ sessionId })),
+              totalSessions: formData.subscriptionType === "PER_SESSION" ? Number(formData.totalSessions) : undefined
+            }]
             : [],
-          totalPrice: singleCalculatedPrice,
         }));
 
         await onSubmit(payloads, null);
@@ -370,11 +435,11 @@ const StudentModal = ({ isOpen, onClose, onSubmit, initialData, sessions, isOnli
           grade: Number(formData.grade),
           subscriptions: formData.selectedSessions.length > 0
             ? [{
-                subscriptionType: formData.subscriptionType,
-                items: formData.selectedSessions.map((sessionId) => ({ sessionId })),
-              }]
+              subscriptionType: formData.subscriptionType,
+              items: formData.selectedSessions.map((sessionId) => ({ sessionId })),
+              totalSessions: formData.subscriptionType === "PER_SESSION" ? Number(formData.totalSessions) : undefined
+            }]
             : [],
-          totalPrice: singleCalculatedPrice,
         };
 
         await onSubmit(basePayload, initialData?.id);
@@ -429,7 +494,13 @@ const StudentModal = ({ isOpen, onClose, onSubmit, initialData, sessions, isOnli
           </div>
         )}
 
-        <form className="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar text-right" onSubmit={handleFormSubmit}>
+        {/* كارت الشرح الذكي الخاص بالنافذة المنبثقة */}
+        <div className="mx-8 mt-4 p-3 bg-slate-50 dark:bg-slate-900 border dark:border-slate-800 rounded-xl text-[11px] text-slate-500 dark:text-slate-400 text-right flex items-start gap-2">
+          <Info size={14} className="text-blue-500 mt-0.5 flex-shrink-0" />
+          <p>تنبيه: تغيير المرحلة أو الصف الدراسي يقوم تلقائياً بإعادة تصفية المجموعات المتاحة لمنع تسكين الطلاب بمجموعات خاطئة لا تطابق مستواهم الأكاديمي.</p>
+        </div>
+
+        <form className="p-8 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar text-right" onSubmit={handleFormSubmit}>
           {!isBatchMode ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -568,6 +639,32 @@ const StudentModal = ({ isOpen, onClose, onSubmit, initialData, sessions, isOnli
             </div>
           </div>
 
+          {/* التحديث الحصري: ظهور خانة شحن رصيد عدد الحصص عند اختيار نظام بالحصة */}
+          <AnimatePresence shadow-sm>
+            {formData.subscriptionType === "PER_SESSION" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="p-4 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-100 dark:border-slate-800 rounded-2xl space-y-2"
+              >
+                <label className="text-xs font-black text-blue-700 dark:text-blue-400 block">عدد الحصص المراد سداد قيمتها وشحنها للطالب:</label>
+                <div className="relative max-w-xs">
+                  <Hash className="absolute right-4 top-3 text-blue-500" size={16} />
+                  <input
+                    type="number"
+                    min={1}
+                    required
+                    className="w-full h-10 pr-10 pl-4 bg-white dark:bg-slate-900 border border-blue-200 dark:border-slate-700 rounded-xl text-xs font-black dark:text-white focus:outline-none"
+                    value={formData.totalSessions}
+                    onChange={(e) => setFormData({ ...formData, totalSessions: Math.max(1, Number(e.target.value)) })}
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400 font-bold">سيقوم محرك النظام بضرب السعر الفردي المهيأ للحصة × {formData.totalSessions} حصص وتوريدها للخزينة بالخادم تلقائياً.</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <div className="space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 block">
@@ -585,21 +682,22 @@ const StudentModal = ({ isOpen, onClose, onSubmit, initialData, sessions, isOnli
               </div>
             </div>
 
-            {/* عرض المجموعات بالتفاصيل الكاملة عند إضافة طالب جديد */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-48 overflow-y-auto p-1 custom-scrollbar">
               {filteredSessions.map((session: any) => {
                 const isChecked = formData.selectedSessions.includes(session.id);
-                const sPrice = getSessionPriceForStudent(session, formData.stage, formData.grade, formData.subscriptionType);
+                const basePrice = getSessionPriceForStudent(session, formData.stage, formData.grade, formData.subscriptionType);
+                const currentPriceText = formData.subscriptionType === "PER_SESSION"
+                  ? `${basePrice * (Number(formData.totalSessions) || 1)} ج.م (${formData.totalSessions} حصص)`
+                  : `${basePrice} ج.م`;
 
                 return (
                   <div
                     key={session.id}
                     onClick={() => toggleSessionSelection(session.id)}
-                    className={`p-4 rounded-2xl border cursor-pointer flex items-center justify-between transition-all ${
-                      isChecked 
-                        ? "bg-blue-50/80 dark:bg-blue-950/20 border-blue-500" 
+                    className={`p-4 rounded-2xl border cursor-pointer flex items-center justify-between transition-all ${isChecked
+                        ? "bg-blue-50/80 dark:bg-blue-950/20 border-blue-500"
                         : "bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-850"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`w-5 h-5 rounded border mt-0.5 flex items-center justify-center ${isChecked ? "bg-blue-600 border-blue-600 text-white" : "border-slate-300 dark:border-slate-700"}`}>
@@ -618,7 +716,7 @@ const StudentModal = ({ isOpen, onClose, onSubmit, initialData, sessions, isOnli
                         </div>
                       </div>
                     </div>
-                    <span className="text-xs font-black text-blue-600 dark:text-blue-400 whitespace-nowrap">{sPrice} ج.م</span>
+                    <span className="text-xs font-black text-blue-600 dark:text-blue-400 whitespace-nowrap">{currentPriceText}</span>
                   </div>
                 );
               })}
@@ -648,21 +746,23 @@ const StudentModal = ({ isOpen, onClose, onSubmit, initialData, sessions, isOnli
 };
 
 // =============================================
-// مودال تجديد وتمديد اشتراكات الطلاب الأسطوري (عرض شامل لكل التفاصيل)
+// مودال تجديد وتمديد اشتراكات الطلاب الأسطوري
 // =============================================
 const RenewSubscriptionModal = ({ isOpen, onClose, student, sessions, onConfirm }: any) => {
   const [subType, setSubType] = useState("MONTHLY");
+  const [totalSessions, setTotalSessions] = useState(4);
   const [selectedSessions, setSelectedSessions] = useState<number[]>([]);
 
   useEffect(() => {
     if (student) {
       const lastSub = student.subscriptions?.[student.subscriptions.length - 1];
       setSubType(lastSub?.subscriptionType || "MONTHLY");
+      setTotalSessions(lastSub?.totalSessions || 4);
       setSelectedSessions(
         lastSub
           ? safeArray<any>(lastSub.enrolledSessions || lastSub.items)
-              .map((i: any) => Number(i.sessionId || i.session?.id))
-              .filter((id: number) => !isNaN(id) && id > 0)
+            .map((i: any) => Number(i.sessionId || i.session?.id))
+            .filter((id: number) => !isNaN(id) && id > 0)
           : []
       );
     }
@@ -678,14 +778,18 @@ const RenewSubscriptionModal = ({ isOpen, onClose, student, sessions, onConfirm 
 
   const calculatedPrice = selectedSessions.reduce((total, sId) => {
     const sessionItem = sessions.find((s: any) => s.id === sId);
-    return total + getSessionPriceForStudent(sessionItem, student.stage, student.grade, subType);
+    const basePrice = getSessionPriceForStudent(sessionItem, student.stage, student.grade, subType);
+    if (subType === "PER_SESSION") {
+      return total + (basePrice * (Number(totalSessions) || 1));
+    }
+    return total + basePrice;
   }, 0);
 
   return (
     <div className="fixed inset-0 z-[115] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md text-right">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }} 
-        animate={{ opacity: 1, y: 0 }} 
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
         className="bg-white dark:bg-slate-950 w-full max-w-xl rounded-[2.5rem] p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6"
       >
         <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800/60 pb-3">
@@ -718,28 +822,37 @@ const RenewSubscriptionModal = ({ isOpen, onClose, student, sessions, onConfirm 
           </div>
         </div>
 
-        {/* تحسين عرض المجموعات بكافة تفاصيلها (اسم الحصة، المدرس، المادة، والقاعة) */}
+        {subType === "PER_SESSION" && (
+          <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/10 border border-emerald-100/60 dark:border-slate-800 rounded-2xl space-y-2">
+            <label className="text-xs font-black text-emerald-700 dark:text-emerald-400 block">عدد الحصص المجددة الشغالة:</label>
+            <input
+              type="number"
+              min={1}
+              className="w-32 h-10 px-4 bg-white dark:bg-slate-900 border border-emerald-200 dark:border-slate-700 rounded-xl text-xs font-black dark:text-white"
+              value={totalSessions}
+              onChange={(e) => setTotalSessions(Math.max(1, Number(e.target.value)))}
+            />
+          </div>
+        )}
+
         <div className="space-y-2">
           <label className="text-xs font-black text-slate-500 dark:text-slate-400 block">
             الحصص والمواد التابعة للفاتورة الجديدة ({availableSessions.length}):
           </label>
-          <div className="space-y-2 max-h-60 overflow-y-auto p-1 custom-scrollbar">
+          <div className="space-y-2 max-h-40 overflow-y-auto p-1 custom-scrollbar">
             {availableSessions.map((session: any) => {
               const isChecked = selectedSessions.includes(session.id);
-              const sPrice = getSessionPriceForStudent(session, student.stage, student.grade, subType);
-              const teacherName = session.teacher?.name || "غير محدد";
-              const subjectName = session.teacher?.subject || session.subject || "عام";
-              const roomName = session.room?.name || "القاعة العامة";
+              const basePrice = getSessionPriceForStudent(session, student.stage, student.grade, subType);
+              const calculatedIndividual = subType === "PER_SESSION" ? basePrice * totalSessions : basePrice;
 
               return (
                 <div
                   key={session.id}
                   onClick={() => setSelectedSessions(isChecked ? selectedSessions.filter(x => x !== session.id) : [...selectedSessions, session.id])}
-                  className={`p-4 rounded-2xl border cursor-pointer flex items-center justify-between transition-all ${
-                    isChecked 
-                      ? "bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-500 text-emerald-900 dark:text-emerald-300 shadow-sm" 
+                  className={`p-4 rounded-2xl border cursor-pointer flex items-center justify-between transition-all ${isChecked
+                      ? "bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-500 text-emerald-900 dark:text-emerald-300 shadow-sm"
                       : "bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-300"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className={`w-5 h-5 rounded border mt-0.5 flex items-center justify-center ${isChecked ? "bg-emerald-600 border-emerald-600 text-white" : "border-slate-300 dark:border-slate-700"}`}>
@@ -748,19 +861,13 @@ const RenewSubscriptionModal = ({ isOpen, onClose, student, sessions, onConfirm 
                     <div className="space-y-1">
                       <p className="text-sm font-black dark:text-white">{session.name}</p>
                       <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold text-slate-400">
-                        <span>المدرس: {teacherName}</span>
+                        <span>المدرس: {session.teacher?.name || "غير محدد"}</span>
                         <span>•</span>
-                        <span className="text-emerald-600 dark:text-emerald-400">المادة: {subjectName}</span>
-                        <span>•</span>
-                        <span className="text-purple-600 dark:text-purple-400 flex items-center gap-0.5">
-                          <Home size={10} /> {roomName}
-                        </span>
+                        <span className="text-emerald-600 dark:text-emerald-400">المادة: {session.teacher?.subject || "عام"}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="text-left whitespace-nowrap pl-1">
-                    <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">{sPrice} ج.م</span>
-                  </div>
+                  <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap">{calculatedIndividual} ج.م</span>
                 </div>
               );
             })}
@@ -773,7 +880,7 @@ const RenewSubscriptionModal = ({ isOpen, onClose, student, sessions, onConfirm 
             <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{calculatedPrice.toFixed(2)} ج.م</p>
           </div>
           <button
-            onClick={() => onConfirm({ subscriptionType: subType, sessionIds: selectedSessions, totalPrice: calculatedPrice }, student.id)}
+            onClick={() => onConfirm({ subscriptionType: subType, sessionIds: selectedSessions, totalSessions: subType === "PER_SESSION" ? totalSessions : undefined }, student.id)}
             className="h-12 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs transition-colors shadow-lg shadow-emerald-600/10"
           >
             تأكيد التحصيل وتحديث الفاتورة فوراً
@@ -785,7 +892,7 @@ const RenewSubscriptionModal = ({ isOpen, onClose, student, sessions, onConfirm 
 };
 
 // =============================================
-// المكون الاستراتيجي الرئيسي لصفحة الطلاب (Students)
+// المكون الاستراتيجي الرئيسي لصفحة الطلاب (Students Dashboard)
 // =============================================
 export default function Students() {
   const [students, setStudents] = useState<any[]>([]);
@@ -794,13 +901,12 @@ export default function Students() {
   const [loading, setLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
-  // فلاتر التصفية المتقدمة
+  // فلاتر التصفية المتقدمة والعميقة
   const [searchQuery, setSearchQuery] = useState("");
   const [stageFilter, setStageFilter] = useState("ALL");
   const [gradeFilter, setGradeFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  // حالات فتح النوافذ المنبثقة
   const [modal, setModal] = useState({ open: false, data: null as any });
   const [renewModal, setRenewModal] = useState({ open: false, student: null as any });
   const [qrModal, setQrModal] = useState({ open: false, student: null as any });
@@ -813,10 +919,7 @@ export default function Students() {
     };
     const handleOffline = () => {
       setIsOnline(false);
-      toast.error(
-        "تم حفظ البيانات محلياً بسبب انقطاع الإنترنت. عند عودة الاتصال، افتح الموقع أو اتركه يعمل في الخلفية من نفس الجهاز ليتم رفع البيانات للسيرفر تلقائياً ⚠️",
-        { duration: 6000, icon: <WifiOff className="text-rose-500" /> }
-      );
+      toast.error("تم حفظ العمليات محلياً بسبب انقطاع الإنترنت. سيرفع السيستم البيانات تلقائياً فور عودة الشبكة ⚠️", { duration: 5000, icon: <WifiOff className="text-rose-500" /> });
     };
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
@@ -852,8 +955,8 @@ export default function Students() {
 
       localStorage.setItem("sentryk_cached_students", JSON.stringify(studentsData));
     } catch (err) {
-      console.error("Error fetching data:", err);
-      toast.error("فشل جلب البيانات المحدثة من خادم Sentryk");
+      console.error(err);
+      toast.error("فشل جلب البيانات المحدثة من السيرفر الرئيسي");
     } finally {
       setLoading(false);
     }
@@ -871,11 +974,12 @@ export default function Students() {
 
     if (studentQueue.length === 0 && subQueue.length === 0) return;
 
-    const syncToastId = toast.loading("جاري مزامنة وشحن الفواتير والعمليات المعلقة أوفلاين...");
+    const syncToastId = toast.loading("جاري مزامنة الفواتير والطلاب المعلقين أوفلاين...");
 
     try {
       if (studentQueue.length > 0) {
-        await api.post("/students/bulk-sync", { studentsArray: studentQueue });
+        // تم التعديل الجذري هنا لتتوافق مع الباك إند بإرسال المفتاح 'students'
+        await api.post("/students/bulk-sync", { students: studentQueue });
         localStorage.setItem("sentryk_offline_student_queue", "[]");
       }
 
@@ -884,11 +988,11 @@ export default function Students() {
         localStorage.setItem("sentryk_offline_sub_queue", "[]");
       }
 
-      toast.success("اكتملت مزامنة العمليات المعلقة وتحديث الحسابات المالية بنجاح تام ⚡", { id: syncToastId });
+      toast.success("اكتملت مزامنة العمليات المعلقة بنجاح تام وتحديث الخزينة ⚡", { id: syncToastId });
       fetchInitialData();
     } catch (err) {
-      console.error("Bulk sync error:", err);
-      toast.error("حدث تضارب جزئي أثناء معالجة الحزمة المجمعة للأوفلاين", { id: syncToastId });
+      console.error(err);
+      toast.error("حدث خطأ في المزامنة المجمعة للأوفلاين ببعض القيود المتقاطعة", { id: syncToastId });
     }
   };
 
@@ -916,12 +1020,13 @@ export default function Students() {
         await api.put(`/students/${studentId}`, payloadOrPayloads);
         toast.success("تم تحديث وحفظ تعديلات ملف الطالب بنجاح");
       } else if (Array.isArray(payloadOrPayloads)) {
-        const toastId = toast.loading("جاري قيد الطلاب تتابعياً بالخادم...");
-        await api.post("/students/bulk-sync", { studentsArray: payloadOrPayloads });
+        const toastId = toast.loading("جاري قيد الطلاب تتابعياً بالخادم المجمع...");
+        // تم التعديل الهيكلي للتوافق مع الباك إند الفردي والمجمع بإرسال المفتاح 'students'
+        await api.post("/students/bulk-sync", { students: payloadOrPayloads });
         toast.success(`تم قيد دفعة الطلاب المجمعة بنجاح وعددهم (${payloadOrPayloads.length})`, { id: toastId });
       } else {
         await api.post("/students", payloadOrPayloads);
-        toast.success("تم تسجيل وقيد الطالب بنجاح وتوليد بطاقة الـ QR النخبوية بالواتساب 🎫");
+        toast.success("تم تسجيل الطالب وتوليد كارت الحضور الذكي في قاعدة البيانات بنجاح 🚀");
       }
       fetchInitialData();
     } catch (err: any) {
@@ -934,23 +1039,27 @@ export default function Students() {
       const currentSubQueue = JSON.parse(localStorage.getItem("sentryk_offline_sub_queue") || "[]");
       currentSubQueue.push({
         studentId,
-        items: renewPayload.sessionIds.map((id: number) => ({ sessionId: id, subscriptionType: renewPayload.subscriptionType })),
+        items: renewPayload.sessionIds.map((id: number) => ({ sessionId: id })),
+        subscriptionType: renewPayload.subscriptionType,
+        totalSessions: renewPayload.totalSessions,
         isOfflineMode: true,
         offlineCreatedAt: new Date().toISOString()
       });
 
       localStorage.setItem("sentryk_offline_sub_queue", JSON.stringify(currentSubQueue));
-      toast.warning("تم جدول وحفظ تجديد الفاتورة في طابور الأوفلاين المحلي بنجاح 💸");
+      toast.warning("تم حفظ تجديد الفاتورة في طابور الأوفلاين المحلي بنجاح 💸");
       setRenewModal({ open: false, student: null });
       return;
     }
 
     try {
       await api.post(`/subscriptions/${studentId}`, {
-        items: renewPayload.sessionIds.map((id: number) => ({ sessionId: id, subscriptionType: renewPayload.subscriptionType }))
+        subscriptionType: renewPayload.subscriptionType,
+        totalSessions: renewPayload.totalSessions,
+        items: renewPayload.sessionIds.map((id: number) => ({ sessionId: id }))
       });
 
-      toast.success("تم تجديد الاشتراك واستلام الرسوم وتحديث إشعار ولي الأمر بالواتساب ✅");
+      toast.success("تم تجديد الاشتراك واستلام الرسوم وتحديث إشعار ولي الأمر ✅");
       setRenewModal({ open: false, student: null });
       fetchInitialData();
     } catch (err: any) {
@@ -959,13 +1068,13 @@ export default function Students() {
   };
 
   const handleDeleteStudent = async (id: number) => {
-    if (!window.confirm("هل أنت متأكد من حذف الطالب نهائياً؟ سيتم مسح السجلات والاشتراكات المرتبطة به كلياً لمنع الأخطاء.")) return;
+    if (!window.confirm("هل أنت متأكد من حذف الطالب نهائياً؟ سيتم مسح السجلات والاشتراكات كلياً.")) return;
     try {
       await api.delete(`/students/${id}`);
-      toast.success("تم إقصاء وحذف كائن الطالب من قاعدة البيانات بنجاح 🧨");
+      toast.success("تم حذف كائن الطالب من قاعدة البيانات بنجاح 🧨");
       fetchInitialData();
     } catch (err) {
-      toast.error("فشل حذف الطالب لوجود قيود علاقات معقدة");
+      toast.error("فشل حذف الطالب لوجود قيود علاقات معقدة بالسيرفر");
     }
   };
 
@@ -993,8 +1102,7 @@ export default function Students() {
         const sessionName = String(item.sessionName || item.session?.name || sessionObj?.name || "").toLowerCase();
         const teacherName = String(item.teacherName || item.session?.teacher?.name || sessionObj?.teacher?.name || "").toLowerCase();
         const subjectName = String(item.subject || item.session?.teacher?.subject || item.session?.subject || sessionObj?.teacher?.subject || "").toLowerCase();
-        const roomName = String(item.room?.name || item.session?.room?.name || sessionObj?.room?.name || "").toLowerCase();
-        return `${sessionName} ${teacherName} ${subjectName} ${roomName}`;
+        return `${sessionName} ${teacherName} ${subjectName}`;
       }).join(" ");
 
       const query = searchQuery.toLowerCase().trim();
@@ -1007,7 +1115,7 @@ export default function Students() {
 
       const matchStage = stageFilter === "ALL" || student.stage === stageFilter;
       const matchGrade = gradeFilter === "ALL" || Number(student.grade) === Number(gradeFilter);
-      
+
       const computedStatus = student.computedStatus || (student.subscriptions?.some((s: any) => s.status === "ACTIVE") ? "ACTIVE" : "EXPIRED");
       const matchStatus = statusFilter === "ALL" || computedStatus === statusFilter;
 
@@ -1019,84 +1127,87 @@ export default function Students() {
     <div className="p-6 space-y-8 font-sans min-h-screen bg-slate-50 dark:bg-slate-950 text-right text-slate-900 dark:text-slate-100" dir="rtl">
       <Toaster position="bottom-left" richColors />
 
-      {/* شريط رأس الصفحة الاحترافي */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b dark:border-slate-900 pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-black tracking-tight flex items-center gap-2">
-              منظومة شؤون إدارة الطلاب والاشتراكات <Sparkles className="text-blue-500" size={24} />
+      {/* شريط رأس الصفحة الاحترافي والمريح للعين */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b dark:border-slate-900/60 pb-5">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-black tracking-tight flex items-center gap-2">
+              منظومة شؤون إدارة الطلاب والاشتراكات <Sparkles className="text-blue-500" size={22} />
             </h1>
-            <span className={`px-2.5 py-1 text-[10px] font-black rounded-full flex items-center gap-1 ${isOnline ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700 animate-pulse"}`}>
+            <span className={`px-2.5 py-1 text-[10px] font-black rounded-full flex items-center gap-1 ${isOnline ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400" : "bg-rose-100 text-rose-700 animate-pulse"}`}>
               {isOnline ? <Wifi size={12} /> : <WifiOff size={12} />}
-              {isOnline ? "متصل بالسيرفر" : "الوضع المحلي أوفلاين"}
+              {isOnline ? "اتصال حي بالسيرفر" : "الوضع المحلي أوفلاين"}
             </span>
           </div>
-          <p className="text-xs font-bold text-slate-400 mt-1">
+          <p className="text-xs font-bold text-slate-400">
             إصدار Sentryk الاحترافي لدعم المزامنة التتابعية المجمعة، قيد الهويات الرقمية بالـ QR Code، تتبع غرف الحصص ومستحقات المدرسين المباشرة.
           </p>
         </div>
         <button
           onClick={() => setModal({ open: true, data: null })}
-          className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl text-sm flex items-center gap-2 shadow-lg transition-transform active:scale-95"
+          className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl text-xs flex items-center gap-2 shadow-lg transition-transform active:scale-95"
         >
-          <Plus size={18} /> تسجيل طالب جديد
+          <Plus size={16} /> تسجيل طالب / حزمة جديدة
         </button>
       </div>
 
-      {/* لوحة بطاقات الإحصاء الاستكشافية */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-3xl flex items-center justify-between shadow-sm">
-          <div>
+      {/* دمج مربع الشرح الإرشادي الموحد */}
+      <SystemGuideBox />
+
+      {/* لوحة بطاقات الإحصاء الاستكشافية الواسعة */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="p-5 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-2xl flex items-center justify-between shadow-sm">
+          <div className="space-y-1">
             <p className="text-xs font-bold text-slate-400">إجمالي الطلاب المقيدين</p>
-            <p className="text-2xl font-black mt-1">{students.length}</p>
+            <p className="text-3xl font-black">{students.length}</p>
           </div>
-          <div className="p-3 bg-blue-50 dark:bg-blue-950/40 text-blue-500 rounded-2xl"><User size={24} /></div>
+          <div className="p-3 bg-blue-50 dark:bg-blue-950/40 text-blue-500 rounded-xl"><User size={22} /></div>
         </div>
 
-        <div className="p-5 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-3xl flex items-center justify-between shadow-sm">
-          <div>
+        <div className="p-5 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-2xl flex items-center justify-between shadow-sm">
+          <div className="space-y-1">
             <p className="text-xs font-bold text-slate-400">الاشتراكات النشطة حالياً</p>
-            <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
+            <p className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
               {students.filter(s => s.computedStatus === "ACTIVE" || s.subscriptions?.some((sub: any) => sub.status === "ACTIVE")).length}
             </p>
           </div>
-          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 rounded-2xl"><UserCheck size={24} /></div>
+          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 rounded-xl"><UserCheck size={22} /></div>
         </div>
 
-        <div className="p-5 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-3xl flex items-center justify-between shadow-sm">
-          <div>
-            <p className="text-xs font-bold text-slate-400">اشتراكات منتهية (تتطلب تجديد)</p>
-            <p className="text-2xl font-black text-rose-600 mt-1">
+        <div className="p-5 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-2xl flex items-center justify-between shadow-sm">
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-slate-400">اشتراكات منتهية (تتطلب سداد)</p>
+            <p className="text-3xl font-black text-rose-600 dark:text-rose-400">
               {students.filter(s => s.computedStatus === "EXPIRED" || (!s.subscriptions || s.subscriptions.length === 0)).length}
             </p>
           </div>
-          <div className="p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-500 rounded-2xl"><UserX size={24} /></div>
+          <div className="p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-500 rounded-xl"><UserX size={22} /></div>
         </div>
 
-        <div className="p-5 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-3xl flex items-center justify-between shadow-sm">
-          <div>
-            <p className="text-xs font-bold text-slate-400">عمليات معلقة بالأوفلاين</p>
-            <p className="text-2xl font-black text-amber-500 mt-1">
+        <div className="p-5 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-2xl flex items-center justify-between shadow-sm">
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-slate-400">عمليات معلقة في الانتظار أوفلاين</p>
+            <p className="text-3xl font-black text-amber-500">
               {JSON.parse(localStorage.getItem("sentryk_offline_student_queue") || "[]").length + JSON.parse(localStorage.getItem("sentryk_offline_sub_queue") || "[]").length}
             </p>
           </div>
-          <div className="p-3 bg-amber-50 dark:bg-amber-950/40 text-amber-500 rounded-2xl"><Clock size={24} /></div>
+          <div className="p-3 bg-amber-50 dark:bg-amber-950/40 text-amber-500 rounded-xl"><Clock size={22} /></div>
         </div>
       </div>
 
-      {/* فلاتر التصفية والبحث العملاق ذو التقسيم العالي */}
-      <div className="p-6 bg-white dark:bg-slate-900 rounded-[2rem] border dark:border-slate-800 shadow-sm space-y-4">
-        <div className="flex items-center gap-2 text-sm font-black text-slate-700 dark:text-slate-300 border-b dark:border-slate-800 pb-2">
-          <Filter size={16} /> لوحة التحكم والفلاتر المتقدمة والفرز الذكي
+      {/* فلاتر التصفية والفرز الذكي العملاق */}
+      <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 shadow-sm space-y-4">
+        <div className="flex items-center gap-2 text-xs font-black text-slate-700 dark:text-slate-300 border-b dark:border-slate-800 pb-2">
+          <Filter size={14} /> لوحة التحكم والفلاتر المتقدمة والفرز الذكي للمحاسبة
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="relative lg:col-span-2">
-            <Search className="absolute right-3 top-3.5 text-slate-400" size={18} />
+            <Search className="absolute right-3 top-3.5 text-slate-400" size={16} />
             <input
               type="text"
-              placeholder="ابحث بالمعرف، اسم الطالب، هاتف، أو اسم المدرس، المادة أو القاعة مباشرة..."
-              className="w-full h-12 pr-10 pl-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-bold focus:outline-none"
+              placeholder="ابحث بالمعرف، اسم الطالب، رقم ولي الأمر، اسم المدرس، أو المادة..."
+              className="w-full h-12 pr-10 pl-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold focus:outline-none focus:border-blue-500"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -1104,18 +1215,18 @@ export default function Students() {
 
           <div>
             <select
-              className="w-full h-12 px-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-bold focus:outline-none appearance-none"
+              className="w-full h-12 px-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold focus:outline-none appearance-none"
               value={stageFilter}
               onChange={(e) => { setStageFilter(e.target.value); setGradeFilter("ALL"); }}
             >
-              <option value="ALL">كل المراحل الدراسية</option>
+              <option value="ALL">كل المراحل التعليمية</option>
               {Object.entries(STAGES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
           </div>
 
           <div>
             <select
-              className="w-full h-12 px-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-bold focus:outline-none appearance-none"
+              className="w-full h-12 px-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold focus:outline-none appearance-none"
               value={gradeFilter}
               disabled={stageFilter === "ALL"}
               onChange={(e) => setGradeFilter(e.target.value)}
@@ -1129,64 +1240,63 @@ export default function Students() {
 
           <div>
             <select
-              className="w-full h-12 px-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-bold focus:outline-none appearance-none"
+              className="w-full h-12 px-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold focus:outline-none appearance-none"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
-              <option value="ALL">كل الحالات المالية والايرادات</option>
+              <option value="ALL">كل الحالات المالية</option>
               <option value="ACTIVE">الطلاب النشطين (مدفوع) ✅</option>
-              <option value="EXPIRED">الاشتراكات المنتهية (مطلوب سداد) ❌</option>
+              <option value="EXPIRED">الاشتراكات المنتهية (مطلب سداد) ❌</option>
             </select>
           </div>
         </div>
       </div>
 
-      {/* جدول البيانات الرئيسي الفخم ذو السطور المفصلة */}
-      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border dark:border-slate-800 shadow-sm overflow-hidden">
+      {/* جدول السجلات الرئيسي الفخم والمريح جداً للعين */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border dark:border-slate-800 shadow-sm overflow-hidden">
         {loading ? (
           <div className="p-20 text-center space-y-3">
-            <Loader2 className="animate-spin text-blue-600 mx-auto" size={40} />
-            <p className="text-xs font-bold text-slate-400">جاري قراءة ومعالجة مصفوفة بيانات الطلاب...</p>
+            <Loader2 className="animate-spin text-blue-600 mx-auto" size={36} />
+            <p className="text-xs font-bold text-slate-400">جاري قراءة ومعالجة مصفوفة بيانات الطلاب والمجموعات...</p>
           </div>
         ) : filteredStudents.length === 0 ? (
           <div className="p-20 text-center space-y-2">
-            <AlertCircle className="text-slate-300 mx-auto" size={50} />
-            <p className="text-sm font-black text-slate-400">لا توجد سجلات طلاب مطابقة لمعايير البحث الحالية.</p>
+            <AlertCircle className="text-slate-300 mx-auto" size={44} />
+            <p className="text-xs font-black text-slate-400">لا توجد سجلات طلاب مطابقة لمعايير البحث الحالية.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-right border-collapse">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/50 border-b dark:border-slate-800 text-[11px] font-black uppercase text-slate-400 tracking-wider">
-                  <th className="p-4">رقم الهوية الذكي</th>
+                <tr className="bg-slate-50 dark:bg-slate-800/30 border-b dark:border-slate-800 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                  <th className="p-4"><div className="flex items-center gap-1"><Hash size={12} /> كود الحساب</div></th>
                   <th className="p-4">اسم الطالب / ولي الأمر</th>
-                  <th className="p-4">المرحلة والصف</th>
-                  <th className="p-4">المواد والمجموعات والقاعات المسجلة</th>
-                  <th className="p-4">مستحقات الخزينة والفاتورة</th>
-                  <th className="p-4">حالة الاشتراك المالي</th>
+                  <th className="p-4">المرحلة والصف الدراسي</th>
+                  <th className="p-4">المجموعات والمواد والقاعات المسجلة بقوة</th>
+                  <th className="p-4">آخر رسوم سداد بالخزينة</th>
+                  <th className="p-4">الحالة المالية</th>
                   <th className="p-4 text-center">أدوات التحكم السريع</th>
                 </tr>
               </thead>
-              <tbody className="divide-y dark:divide-slate-800 text-xs font-bold">
+              <tbody className="divide-y dark:divide-slate-800/80 text-xs font-bold">
                 {filteredStudents.map((student: any) => {
                   const lastSubscription = student.subscriptions?.[student.subscriptions.length - 1];
                   const computedStatus = student.computedStatus || (lastSubscription?.status === "ACTIVE" ? "ACTIVE" : "EXPIRED");
                   const enrolledSessions = safeArray<any>(lastSubscription?.enrolledSessions || lastSubscription?.items);
 
                   return (
-                    <tr key={student.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                    <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
                       <td className="p-4 font-mono text-slate-400">#{student.id}</td>
                       <td className="p-4">
                         <p className="text-sm font-black text-slate-900 dark:text-white">{student.name}</p>
-                        <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1 mt-0.5">
-                          <Phone size={12} /> {student.phone}
+                        <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1 mt-0.5" dir="ltr">
+                          <Phone size={10} /> {student.phone}
                         </p>
                       </td>
                       <td className="p-4">
                         <p className="text-slate-700 dark:text-slate-300 text-[11px]">{STAGES[student.stage]}</p>
                         <p className="text-[10px] font-bold text-slate-400 mt-0.5">الصف رقم {student.grade}</p>
                       </td>
-                      {/* عرض المدرسين والمواد والقاعات بشكل أسطوري ونظيف جداً في جدول الطلاب */}
                       <td className="p-4 max-w-xs">
                         {enrolledSessions.length === 0 ? (
                           <span className="text-[10px] text-slate-400 dark:text-slate-500 italic">غير مسكن بمجموعات حالياً</span>
@@ -1200,15 +1310,12 @@ export default function Students() {
                               const currentRoom = item.room?.name || item.session?.room?.name || sessionObj?.room?.name || "القاعة العامة";
 
                               return (
-                                <div key={idx} className="flex flex-wrap items-center gap-1.5 text-[11px] leading-tight text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/40 p-2 rounded-xl border dark:border-slate-800/80">
+                                <div key={idx} className="flex flex-wrap items-center gap-1.5 text-[10px] bg-slate-50 dark:bg-slate-800/40 p-2 rounded-xl border dark:border-slate-800/60">
                                   <span className="font-black text-blue-600 dark:text-blue-400">{currentSessionName}</span>
                                   <span className="text-slate-300 dark:text-slate-700">•</span>
-                                  <span className="text-slate-600 dark:text-slate-400 font-bold">أ/ {currentTeacherName}</span>
-                                  <span className="px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 rounded font-black text-[10px]">
-                                    {currentSubject}
-                                  </span>
-                                  <span className="px-1.5 py-0.5 bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 rounded font-black text-[10px] flex items-center gap-0.5">
-                                    <Home size={10} /> {currentRoom}
+                                  <span className="text-slate-600 dark:text-slate-400">أ/ {currentTeacherName}</span>
+                                  <span className="px-1.5 py-0.5 bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 rounded font-black text-[9px] flex items-center gap-0.5">
+                                    <Home size={9} /> {currentRoom} ({currentSubject})
                                   </span>
                                 </div>
                               );
@@ -1217,43 +1324,48 @@ export default function Students() {
                         )}
                       </td>
                       <td className="p-4">
-                        <p className="font-black text-emerald-600 dark:text-emerald-400">{lastSubscription?.totalPrice ? `${lastSubscription.totalPrice} ج.م` : "0.00"}</p>
+                        <p className="font-black text-emerald-600 dark:text-emerald-400">
+                          {lastSubscription?.totalPrice ? `${lastSubscription.totalPrice} ج.م` : "0.00 ج.م"}
+                        </p>
+                        {lastSubscription?.totalSessions && (
+                          <p className="text-[9px] text-blue-500 font-bold">الرصيد: {lastSubscription.totalSessions} حصص</p>
+                        )}
                         <p className="text-[9px] text-slate-400 flex items-center gap-0.5 mt-0.5">
                           <Calendar size={10} /> ينتهي: {lastSubscription?.endDate ? new Date(lastSubscription.endDate).toLocaleDateString("ar-EG") : "بلا تاريخ"}
                         </p>
                       </td>
                       <td className="p-4">
-                        <span className={`px-2.5 py-1 text-[10px] font-black rounded-full ${computedStatus === "ACTIVE" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>
-                          {computedStatus === "ACTIVE" ? "نشط ومسدد" : "منتهي الصلاحية"}
+                        <span className={`px-2.5 py-1 text-[10px] font-black rounded-full ${computedStatus === "ACTIVE" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400" : "bg-rose-100 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400"}`}>
+                          {computedStatus === "ACTIVE" ? "نشط ومسدد" : "مطلوب تجديد مالي"}
                         </span>
                       </td>
                       <td className="p-4">
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             onClick={() => setRenewModal({ open: true, student })}
-                            className="h-8 px-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10px] rounded-xl flex items-center gap-1 transition-colors"
+                            className="h-8 px-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10px] rounded-lg flex items-center gap-1 transition-colors"
                             title="تجديد وتحصيل اشتراك الطالب ماليًا"
                           >
-                            <RefreshCcw size={12} /> تجديد الاشتراك
+                            <RefreshCcw size={12} /> تجديد الفاتورة
                           </button>
                           <button
                             onClick={() => setQrModal({ open: true, student })}
-                            className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-blue-600 hover:text-white transition-colors"
-                            title="عرض بطاقة الهوية الرقمية الرسمية"
+                            className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-blue-600 hover:text-white transition-colors"
+                            title="عرض بطاقة الهوية الرقمية للـ QR"
                           >
-                            <QrCode size={14} />
+                            <QrCode size={12} />
                           </button>
                           <button
                             onClick={() => setModal({ open: true, data: student })}
-                            className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-amber-500 hover:text-white transition-colors"
+                            className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-amber-500 hover:text-white transition-colors"
                           >
-                            <Edit2 size={14} />
+                            <Edit2 size={12} />
                           </button>
                           <button
                             onClick={() => handleDeleteStudent(student.id)}
-                            className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-rose-500 rounded-xl transition-colors"
+                            className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-rose-500 rounded-lg transition-colors"
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={12} />
                           </button>
                         </div>
                       </td>

@@ -5,7 +5,8 @@ import {
   DollarSign, Check, Loader2, 
   Edit3, ChevronRight, Hash,
   User, Phone, GraduationCap, ShieldAlert,
-  Search, Users, Layers, AlertCircle
+  Search, Users, Layers, AlertCircle,
+  Calendar, Eye
 } from 'lucide-react';
 import api from '../../api/axios';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -19,6 +20,8 @@ interface IPriceConfig {
   grades: number[]; 
   subscriptionType: 'PER_SESSION' | 'MONTHLY' | 'HALF_MONTH' | 'COURSE';
   price: number | string;
+  durationMonths?: number | null;
+  totalSessions?: number | null;
 }
 
 interface ITeacherStats {
@@ -104,21 +107,23 @@ const TeacherModal = ({ isOpen, onClose, onSubmit, initialData }: {
         setSubject(initialData.subject);
         setPhone(initialData.phone || '');
         
-        // فلترة حزم نصف الشهر التلقائية من العرض لمنع تكرار الحزم للبرودكت أثناء التعديل
+        // فلترة حزم نصف الشهر التلقائية من العرض لمنع تكرار الحزم أثناء التعديل
         const filteredConfigs = (initialData.priceConfigs || [])
           .filter((cfg: IPriceConfig) => cfg.subscriptionType !== 'HALF_MONTH')
           .map((cfg: IPriceConfig) => ({
             stage: cfg.stage,
             grades: Array.isArray(cfg.grades) ? cfg.grades : [],
             subscriptionType: cfg.subscriptionType,
-            price: cfg.price
+            price: cfg.price,
+            durationMonths: cfg.durationMonths || null,
+            totalSessions: cfg.totalSessions || null
           }));
-        setPriceConfigs(filteredConfigs.length > 0 ? filteredConfigs : [{ stage: 'HIGH', grades: [3], subscriptionType: 'MONTHLY', price: '' }]);
+        setPriceConfigs(filteredConfigs.length > 0 ? filteredConfigs : [{ stage: 'HIGH', grades: [3], subscriptionType: 'MONTHLY', price: '', durationMonths: null, totalSessions: null }]);
       } else {
         setName('');
         setSubject('');
         setPhone('');
-        setPriceConfigs([{ stage: 'HIGH', grades: [3], subscriptionType: 'MONTHLY', price: '' }]);
+        setPriceConfigs([{ stage: 'HIGH', grades: [3], subscriptionType: 'MONTHLY', price: '', durationMonths: null, totalSessions: null }]);
       }
     }
   }, [initialData, isOpen]);
@@ -128,16 +133,17 @@ const TeacherModal = ({ isOpen, onClose, onSubmit, initialData }: {
       name.trim() !== '' &&
       subject.trim() !== '' &&
       priceConfigs.length > 0 &&
-      priceConfigs.every(cfg => 
-        cfg.grades.length > 0 && 
-        cfg.price !== '' && 
-        Number(cfg.price) >= 0
-      )
+      priceConfigs.every(cfg => {
+        const hasGrades = cfg.grades.length > 0;
+        const hasPrice = cfg.price !== '' && Number(cfg.price) >= 0;
+        const hasValidCourseDuration = cfg.subscriptionType !== 'COURSE' || (cfg.durationMonths !== null && Number(cfg.durationMonths) >= 1);
+        return hasGrades && hasPrice && hasValidCourseDuration;
+      })
     );
   }, [name, subject, priceConfigs]);
 
   const addPriceConfig = () => {
-    setPriceConfigs([...priceConfigs, { stage: 'HIGH', grades: [3], subscriptionType: 'MONTHLY', price: '' }]);
+    setPriceConfigs([...priceConfigs, { stage: 'HIGH', grades: [3], subscriptionType: 'MONTHLY', price: '', durationMonths: null, totalSessions: null }]);
   };
 
   const removePriceConfig = (index: number) => {
@@ -149,6 +155,9 @@ const TeacherModal = ({ isOpen, onClose, onSubmit, initialData }: {
     if (field === 'stage') {
       updated[index].stage = value;
       updated[index].grades = [STAGE_GRADES_MAP[value as keyof typeof STAGE_GRADES_MAP][0]];
+    } else if (field === 'subscriptionType') {
+      updated[index].subscriptionType = value;
+      updated[index].durationMonths = value === 'COURSE' ? 3 : null; // القيمة الافتراضية للترم 3 شهور
     } else {
       updated[index] = { ...updated[index], [field]: value };
     }
@@ -181,7 +190,9 @@ const TeacherModal = ({ isOpen, onClose, onSubmit, initialData }: {
           stage: cfg.stage,
           grades: cfg.grades.map(Number),
           subscriptionType: cfg.subscriptionType,
-          price: Number(cfg.price)
+          price: Number(cfg.price),
+          durationMonths: cfg.subscriptionType === 'COURSE' ? Number(cfg.durationMonths) : null,
+          totalSessions: cfg.totalSessions ? Number(cfg.totalSessions) : null
         }))
       };
       await onSubmit(payload);
@@ -213,7 +224,7 @@ const TeacherModal = ({ isOpen, onClose, onSubmit, initialData }: {
               <h3 className="text-xl font-black dark:text-white">
                 {initialData ? 'تعديل بيانات وحزم المدرس' : 'تسجيل مدرس جديد بالمنظومة'}
               </h3>
-              <p className="text-xs text-slate-500 font-bold mt-0.5">ربط المدرس بالمادة وتعيين استراتيجية التسعير المشتركة</p>
+              <p className="text-xs text-slate-500 font-bold mt-0.5">ربط المدرس بالمادة وتعيين استراتيجية التسعير وهيكل الاشتراكات</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-rose-500/10 text-slate-400 hover:text-rose-500 rounded-lg transition-all">
@@ -280,7 +291,7 @@ const TeacherModal = ({ isOpen, onClose, onSubmit, initialData }: {
             <div className="flex justify-between items-center">
               <div>
                 <h4 className="text-sm font-black dark:text-white">إعداد حزم التسعير والسنوات المستهدفة</h4>
-                <p className="text-[11px] text-slate-400 font-bold">يمكنك إضافة حزم متعددة وتعيين أسعار مختلفة حسب المرحلة والمجموعة</p>
+                <p className="text-[11px] text-slate-400 font-bold">يمكنك إضافة حزم متعددة وتعيين أسعار مختلفة حسب المرحلة وهيكل الاشتراك</p>
               </div>
               <button
                 type="button"
@@ -354,6 +365,40 @@ const TeacherModal = ({ isOpen, onClose, onSubmit, initialData }: {
                     </div>
                   </div>
 
+                  {/* الحقول الديناميكية بناء على شروط الباك اند الرائعة لـ COURSE */}
+                  {cfg.subscriptionType === 'COURSE' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-dashed border-slate-200 dark:border-slate-700 pt-3">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-black text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                          <Calendar size={13} /> مدة الكورس الإجمالية بالشهور (إجباري للكورسات)
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          required
+                          value={cfg.durationMonths || ''}
+                          onChange={(e) => updateConfigField(index, 'durationMonths', Number(e.target.value))}
+                          placeholder="مثال: 3 شهور"
+                          className="w-full h-11 px-3 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50/20 dark:bg-amber-950/10 font-bold text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"
+                        />
+                      </div>
+                      
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                          عدد الحصص الافتراضي (اختياري)
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={cfg.totalSessions || ''}
+                          onChange={(e) => updateConfigField(index, 'totalSessions', e.target.value ? Number(e.target.value) : null)}
+                          placeholder="مثال: 24 حصة"
+                          className="w-full h-11 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-xs focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {/* السنوات الدراسية تابعة للمرحلة */}
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-slate-500">السنوات الدراسية المشمولة بالحزمة السعرية:</label>
@@ -389,7 +434,7 @@ const TeacherModal = ({ isOpen, onClose, onSubmit, initialData }: {
               onClick={onClose}
               className="h-12 px-6 bg-slate-100 dark:bg-slate-800 font-black text-xs text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200"
             >
-              إلغاء التراجع
+              إلغاء والتراجع
             </button>
             <button
               type="submit"
@@ -465,13 +510,11 @@ export default function Teachers() {
   // إرسال البيانات المجمعة للسيرفر (إضافة أو تعديل)
   const handleTeacherActionSubmit = async (payload: any) => {
     if (modal.data && modal.data.id) {
-      // حالة التعديل (PUT)
       const res = await api.put(`/teachers/${modal.data.id}`, payload);
       if (res.data && res.data.success) {
         fetchTeachers();
       }
     } else {
-      // حالة الإضافة (POST)
       const res = await api.post('/teachers', payload);
       if (res.data && res.data.success) {
         fetchTeachers();
@@ -495,13 +538,13 @@ export default function Teachers() {
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-[1600px] mx-auto min-h-screen" dir="rtl">
+    <div className="p-6 space-y-6 max-w-[1600px] mx-auto min-h-screen bg-slate-50/30 dark:bg-slate-950/10" dir="rtl">
       
       {/* الهيدر الرئيسي والإضافة */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-800 dark:text-white">إدارة الهيئة التعليمية</h1>
-          <p className="text-xs font-bold text-slate-400 mt-0.5">تسجيل المعلمين، هيكلة تسعير الاشتراكات، ومراقبة المبيعات الحية للمجموعات</p>
+          <p className="text-xs font-bold text-slate-400 mt-0.5">تسجيل المعلمين، هيكلة تسعير الاشتراكات، ومراقبة الدخل المالي المباشر للمجموعات</p>
         </div>
 
         <button
@@ -512,7 +555,62 @@ export default function Teachers() {
         </button>
       </div>
 
-      {/* لوحة المؤشرات والإحصائيات الشاملة */}
+      {/* =============================================
+          ✨ المربعات الإرشادية التفاعلية والأنيقة (دليل الاستخدام الذكي بدون فيديو)
+         ============================================= */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="p-4 bg-gradient-to-br from-indigo-50/60 to-indigo-100/30 dark:from-indigo-950/20 dark:to-slate-900/40 border border-indigo-100/80 dark:border-indigo-900/40 rounded-2xl flex items-start gap-3">
+          <div className="p-2 bg-indigo-600 text-white rounded-xl mt-0.5 shadow-sm">
+            <Plus size={16} />
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-indigo-950 dark:text-indigo-300">1. تسجيل المعلم والمادة</h4>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1 leading-relaxed">
+              ابدأ بالضغط على زر <strong className="text-indigo-600 dark:text-indigo-400">تسجيل مدرس جديد</strong> لإدخال الاسم التخصصي، رقم الهاتف، والبيانات الأساسية للمعلم في ثوانٍ.
+            </p>
+          </div>
+        </div>
+
+        <div className="p-4 bg-gradient-to-br from-emerald-50/60 to-emerald-100/30 dark:from-emerald-950/20 dark:to-slate-900/40 border border-emerald-100/80 dark:border-emerald-900/40 rounded-2xl flex items-start gap-3">
+          <div className="p-2 bg-emerald-600 text-white rounded-xl mt-0.5 shadow-sm">
+            <DollarSign size={16} />
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-emerald-950 dark:text-emerald-300">2. تسعير الباقات الذكي</h4>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1 leading-relaxed">
+              اختر نوع الحزمة (شهري، كورس، بالحصة). عند تعيينك لسعر <strong className="text-emerald-600 dark:text-emerald-400">شهري</strong>، سيقوم السستم تلقائياً ببناء باقة نصف الشهر تيسيراً عليك!
+            </p>
+          </div>
+        </div>
+
+        <div className="p-4 bg-gradient-to-br from-amber-50/60 to-amber-100/30 dark:from-amber-950/20 dark:to-slate-900/40 border border-amber-100/80 dark:border-amber-900/40 rounded-2xl flex items-start gap-3">
+          <div className="p-2 bg-amber-600 text-white rounded-xl mt-0.5 shadow-sm">
+            <Eye size={16} />
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-amber-950 dark:text-amber-300">3. تتبع الإحصائيات الحية</h4>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1 leading-relaxed">
+              كل كارت يعرض لك فوراً عدد المجموعات والطلاب النشطين، بالإضافة إلى <strong className="text-amber-600 dark:text-amber-400">الدخل المالي المتوقع</strong> المحسوب ذاتياً من الاشتراكات.
+            </p>
+          </div>
+        </div>
+
+        <div className="p-4 bg-gradient-to-br from-rose-50/60 to-rose-100/30 dark:from-rose-950/20 dark:to-slate-900/40 border border-rose-100/80 dark:border-rose-900/40 rounded-2xl flex items-start gap-3">
+          <div className="p-2 bg-rose-600 text-white rounded-xl mt-0.5 shadow-sm">
+            <ShieldAlert size={16} />
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-rose-950 dark:text-rose-300">4. جدار الأمان الصارم</h4>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1 leading-relaxed">
+              لحماية حساباتك، لن يسمح لك السستم بحذف أي معلم يمتلك مجموعات نشطة بها طلاب أو سجلات حضور، حفاظاً على التماسك المالي للسنتر.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <hr className="border-slate-100 dark:border-slate-900 my-2" />
+
+      {/* لوحة المؤشرات والإحصائيات الشاملة للسنتر بالكامل */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl flex items-center gap-4 shadow-sm">
           <div className="p-3.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl"><GraduationCap size={22} /></div>
@@ -525,7 +623,7 @@ export default function Teachers() {
         <div className="p-5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl flex items-center gap-4 shadow-sm">
           <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl"><Layers size={22} /></div>
           <div>
-            <p className="text-[10px] text-slate-400 font-black">إجمالي المجموعات والسيشنز</p>
+            <p className="text-[10px] text-slate-400 font-black">إجمالي المجموعات</p>
             <h3 className="text-xl font-black dark:text-white mt-0.5">{globalDashboardStats.totalSessions}</h3>
           </div>
         </div>
@@ -571,7 +669,7 @@ export default function Teachers() {
           <p className="text-sm font-black text-slate-500 dark:text-slate-400">لا يوجد مدرسين مسجلين يطابقون مدخلات البحث الحالية</p>
         </div>
       ) : (
-        /* كروت المعلمين الأسطورية */
+        /* كروت المعلمين الفخمة */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTeachers.map((teacher) => (
             <motion.div
@@ -590,7 +688,7 @@ export default function Teachers() {
                   </div>
                 </div>
 
-                {/* خيارات التحكم الحصري للمدير الإداري */}
+                {/* خيارات التحكم للمشرف والمدير */}
                 <div className="flex gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => setModal({ open: true, data: teacher })}
@@ -611,7 +709,7 @@ export default function Teachers() {
                 </div>
               </div>
 
-              {/* الإحصائيات الحية داخل الكارت للمدرس الحالي */}
+              {/* الإحصائيات الحية للمدرس الحالي */}
               <div className="px-5 py-4 bg-slate-50/40 dark:bg-slate-800/10 grid grid-cols-3 gap-2 text-center border-b border-slate-50 dark:border-slate-800/60">
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold block">المجموعات</span>
@@ -627,18 +725,19 @@ export default function Teachers() {
                 </div>
               </div>
 
-              {/* قائمة حزم الأسعار الحالية والمربوطة بالمعلم */}
+              {/* قائمة حزم الأسعار النشطة والمعتمدة */}
               <div className="p-5 flex-1 space-y-3">
                 <span className="text-[10px] font-black text-slate-400 tracking-wider uppercase block">هيكل التسعير النشط للمجموعات:</span>
                 <div className="space-y-1.5 max-h-[140px] overflow-y-auto custom-scrollbar pr-1">
                   {(teacher.priceConfigs || [])
-                    .filter(c => c.subscriptionType !== 'HALF_MONTH') // إخفاء النصف شهري التلقائي من لوحة العرض لتجنب التكدس البصري
+                    .filter(c => c.subscriptionType !== 'HALF_MONTH') // إخفاء نصف الشهر التلقائي بصرياً لمنع تكدس الكارت
                     .map((cfg, i) => (
                       <div key={i} className="flex justify-between items-center bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2.5 rounded-xl text-xs">
                         <div className="space-y-0.5">
                           <span className="font-black text-slate-700 dark:text-slate-200 block">{STAGES[cfg.stage]}</span>
                           <span className="text-[10px] text-slate-400 font-bold block">
-                            {cfg.grades.map(g => GRADE_NAMES[cfg.stage][g]).join(' ، ')} • <span className="text-indigo-500">{SUB_TYPES[cfg.subscriptionType]}</span>
+                            {cfg.grades.map(g => GRADE_NAMES[cfg.stage][g]).join(' ، ')} • <span className="text-indigo-500 font-black">{SUB_TYPES[cfg.subscriptionType]}</span>
+                            {cfg.subscriptionType === 'COURSE' && cfg.durationMonths && ` (${cfg.durationMonths} شهور)`}
                           </span>
                         </div>
                         <span className="px-2 py-1 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-700 font-black text-slate-800 dark:text-white">
@@ -649,7 +748,7 @@ export default function Teachers() {
                 </div>
               </div>
 
-              {/* فوتر الكارت الصغير */}
+              {/* فوتر الكارت الفرعي */}
               <div className="px-5 py-3 bg-slate-50/50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-[10px] text-slate-400 font-bold">
                 <span className="flex items-center gap-1"><Hash size={11} /> كود المعلم الفريد: {teacher.id}</span>
                 <ChevronRight size={13} className="group-hover:translate-x-[-3px] text-indigo-500 transition-transform duration-300" />
@@ -659,7 +758,7 @@ export default function Teachers() {
         </div>
       )}
 
-      {/* مودال التحذير الإداري وجدار الأمان في حالة منع الحذف لربط البيانات */}
+      {/* مودال التحذير الإداري لمنع المسح وحماية الترابط الحسابي */}
       <AnimatePresence>
         {serverErrorModal && (
           <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
@@ -680,7 +779,7 @@ export default function Teachers() {
                 onClick={() => setServerErrorModal(null)}
                 className="w-full h-11 bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-black text-xs rounded-xl hover:opacity-90"
               >
-                فهمت، مراجعة ونقل الطلاب والاشتراكات أولاً
+                فهمت، مراجعة وتصفية المجموعات النشطة أولاً
               </button>
             </motion.div>
           </div>
@@ -699,7 +798,7 @@ export default function Teachers() {
         )}
       </AnimatePresence>
 
-      {/* ستايل مخصص لشرائط التصفح السلسة المدمجة */}
+      {/* ستايل شرائط التصفح الداخلية */}
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }

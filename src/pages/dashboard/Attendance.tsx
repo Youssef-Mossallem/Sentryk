@@ -453,7 +453,7 @@ export default function AttendanceManager() {
                 parsedJson.id ||
                 decodedText;
             } catch {
-              // Raw Plain text parsing
+              console.log("QR code is not JSON, using raw text:", decodedText);
             }
 
             const matchedStudent = allStudents.find(
@@ -589,7 +589,7 @@ export default function AttendanceManager() {
               }, 1400);
             }
           },
-          () => {},
+          () => { },
         );
         setCameraError("");
       } catch (err: any) {
@@ -879,46 +879,154 @@ export default function AttendanceManager() {
     loadInitialData,
   ]);
 
-  const handleManualToggle = (
+  const handleManualToggle = async (
     student: StudentItem,
     forceStatus?: "PRESENT" | "LATE",
   ) => {
     const isCurrentlyScanned = scannedStudents.has(student.id);
 
+    // [الحالة الأولى]: نقرة لإلغاء تحضير الطالب (تحويل حالته إلى غائب ABSENT في السيرفر)
     if (isCurrentlyScanned && !forceStatus) {
+      if (!navigator.onLine) {
+        toast.error("عذراً، يجب توفر اتصال نشط بالإنترنت لإلغاء الحضور من الخادم الرئيسي! 🌐");
+        return;
+      }
+
+      setBusyAction(`manual-${student.id}`);
+      try {
+        if (selectedSessionIds.length === 0) {
+          toast.error("خطأ هيكلي: يرجى تحديد المجموعات المستهدفة أولاً.");
+          return;
+        }
+
+        // تحديث حالة الطالب في السيرفر إلى غائب ABSENT لجميع المجموعات النشطة المحددة بالتوازي
+        await Promise.all(
+          selectedSessionIds.map((sid) =>
+            api.post("/attendance/mark-attendance", {
+              studentId: student.id,
+              sessionId: sid,
+              status: "ABSENT",
+              lateMinutes: 0,
+            })
+          )
+        );
+
+        setScannedStudents((prev) => {
+          const next = new Map(prev);
+          next.delete(student.id);
+          return next;
+        });
+
+        playErrorSound();
+        setLastScanResult({
+          success: false,
+          studentName: student.name,
+          message: "تم إلغاء تحضير الطالب وحذف سجله من المجموعات الحالية بنجاح عبر السيرفر. 🗑️",
+          timestamp: new Date().toLocaleTimeString("ar-EG"),
+        });
+        toast.success(`تم إلغاء تحضير الطالب (${student.name}) من السيرفر.`);
+      } catch (err: any) {
+        playErrorSound();
+        toast.error(getFriendlyErrorMessage(err, "فشل إلغاء تحضير الطالب من قاعدة البيانات."));
+      } finally {
+        setBusyAction("");
+      }
+      return;
+    }
+
+    // تحديد الحالة المراد إثباتها (حاضر أو متأخر)
+    const finalStatus = forceStatus || "PRESENT";
+
+    // الفرع أ: معالجة الحركة في وضع انقطاع الإنترنت (Offline Sync Buffer)
+    if (!navigator.onLine) {
+      playSuccessSound();
+      const timestamp = new Date().toLocaleTimeString("ar-EG");
+
       setScannedStudents((prev) => {
         const next = new Map(prev);
-        next.delete(student.id);
+        next.set(student.id, {
+          ...student,
+          scannedAt: timestamp,
+          status: finalStatus,
+          isOfflineRecord: true,
+        });
         return next;
       });
+
+      setLastScanResult({
+        success: true,
+        studentName: student.name,
+        message: `[وضع محلي أوفلاين] تم حفظ رصد الطالب بحالة [${finalStatus === "PRESENT" ? "حاضر" : "متأخر"}] بذاكرة المتصفح مؤقتاً. 💾`,
+        timestamp,
+      });
+
+      const localData = localStorage.getItem("sentryk_offline_attendance") || "[]";
+      const parsedRecords = JSON.parse(localData);
+
+      selectedSessionIds.forEach((sid) => {
+        parsedRecords.push({
+          studentId: student.id,
+          sessionId: sid,
+          status: finalStatus,
+          scannedAt: new Date().toISOString(),
+          autoMarked: false,
+          markedBySystem: false,
+        });
+      });
+
+      localStorage.setItem("sentryk_offline_attendance", JSON.stringify(parsedRecords));
+      return;
+    }
+
+    // الفرع ب: إرسال الحضور اليدوي مباشرة للسيرفر (Online Direct Integration)
+    setBusyAction(`manual-${student.id}`);
+    try {
+      if (selectedSessionIds.length === 0) {
+        toast.error("خطأ: لم يتم اختيار أي مجموعة لتسجيل الحضور بها.");
+        return;
+      }
+
+      // إطلاق طلبات الـ POST بالتوازي عبر الـ API الفعلي لضمان سرعة المعالجة الذرية المطلقة
+      await Promise.all(
+        selectedSessionIds.map((sid) =>
+          api.post("/attendance/mark-attendance", {
+            studentId: student.id,
+            sessionId: sid,
+            status: finalStatus,
+            lateMinutes: finalStatus === "LATE" ? 15 : 0, // 15 دقيقة افتراضية في حالة رصد التأخير اليدوي
+          })
+        )
+      );
+
+      playSuccessSound();
+      setScannedStudents((prev) => {
+        const next = new Map(prev);
+        next.set(student.id, {
+          ...student,
+          scannedAt: new Date().toLocaleTimeString("ar-EG"),
+          status: finalStatus,
+        });
+        return next;
+      });
+
+      setLastScanResult({
+        success: true,
+        studentName: student.name,
+        message: `تم إثبات التحضير اليدوي بنجاح استراتيجي تام بالخادم بحالة [${finalStatus === "PRESENT" ? "حاضر" : "متأخر"}] 🎯`,
+        timestamp: new Date().toLocaleTimeString("ar-EG"),
+      });
+    } catch (err: any) {
       playErrorSound();
       setLastScanResult({
         success: false,
         studentName: student.name,
-        message: "تم إلغاء تحضير الطالب من الجلسة الجارية بنجاح.",
+        message: getFriendlyErrorMessage(err, "فشل السيرفر في قبول عملية التحضير اليدوي."),
         timestamp: new Date().toLocaleTimeString("ar-EG"),
       });
-      return;
+      toast.error(getFriendlyErrorMessage(err, "لم يتم تسجيل الحضور اليدوي؛ تفحص قيود الخادم."));
+    } finally {
+      setBusyAction("");
     }
-
-    const finalStatus = forceStatus || "PRESENT";
-    playSuccessSound();
-    setScannedStudents((prev) => {
-      const next = new Map(prev);
-      next.set(student.id, {
-        ...student,
-        scannedAt: new Date().toLocaleTimeString("ar-EG"),
-        status: finalStatus,
-      });
-      return next;
-    });
-
-    setLastScanResult({
-      success: true,
-      studentName: student.name,
-      message: `تم التحضير اليدوي الفوري للطالب بحالة [${finalStatus === "PRESENT" ? "حاضر" : "متأخر"}].`,
-      timestamp: new Date().toLocaleTimeString("ar-EG"),
-    });
   };
 
   /**
@@ -1146,43 +1254,59 @@ export default function AttendanceManager() {
 
       {/* 💡 خريطة وشرح ميزات المعمارية والربط المتتالي الذكي للطلاب */}
       <div className="max-w-7xl mx-auto mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-indigo-50 to-white dark:from-slate-900 dark:to-slate-950 p-5 rounded-2xl border border-indigo-100 dark:border-slate-800 shadow-sm flex flex-col gap-2">
+        {/* الكرت الأول: إدارة الحصص المتعددة والنقل الذكي */}
+        <div className="bg-gradient-to-br from-indigo-50 to-white dark:from-slate-900 dark:to-slate-950 p-6 rounded-2xl border border-indigo-100 dark:border-slate-800 shadow-sm flex flex-col gap-3">
           <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400 font-black text-sm">
-            <ArrowLeftRight size={18} /> شرح آلية النقل الذكي المتتالي للطلاب ⚡
+            <ArrowLeftRight size={18} /> إدارة الحصص المتعددة وآلية النقل الذكي للطلاب ⚡
           </div>
-          <p className="text-xs leading-5 text-slate-600 dark:text-slate-300">
-            النظام يتتبع حضور الطلاب بدقة؛ إذا سجل الطالب{" "}
-            <strong>(محمد أو محمود)</strong> حضوراً في حِصة اللغة العربية
-            المنتهية الآن، يمتلك السيرفر ذكاءً برمجياً ليقوم{" "}
-            <strong>بترحيله وتثبيت حضوره تلقائياً</strong> في حِصة الفيزياء
-            التالية مباشرة إذا كان مشتركاً بها، بمجرد فتح الإدارة للمجموعة ودون
-            وقوف الطالب في طابور المسح مجدداً.
+          <p className="text-xs leading-5 text-slate-600 dark:text-slate-300 text-justify">
+            يمنح النظام السكرتارية صلاحية خارقة لـ{" "}
+            <strong>فتح واختيار أكثر من حصة أو مجموعة في نفس الوقت</strong> لتسجيل
+            حضور الطلاب فيها معاً بضغطة واحدة. بالإضافة إلى ذلك، يتتبّع النظام جدول
+            الطالب بذكاء لمنع وقوفه المتكرر في الطوابير؛ فإذا سجل الطالب حضوراً في
+            حصة <strong>(اللغة العربية)</strong> المنتهية الآن، وكان مقيداً في حصة{" "}
+            <strong>(الفيزياء)</strong> التالية التي تبدأ بعدها مباشرة{" "}
+            <strong>(بفارق زمني أقل من 30 دقيقة)</strong>، يقوم السيرفر تلقائياً{" "}
+            <strong>بترحيله وتثبيت حضوره في حصة الفيزياء</strong> بمجرد فتحها من قِبل
+            الإدارة، دون أن يحتاج الطالب لإعادة مسح كرته أو الوقوف في الزحام مجدداً.
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-emerald-50 to-white dark:from-slate-900 dark:to-slate-950 p-5 rounded-2xl border border-emerald-100 dark:border-slate-800 shadow-sm flex flex-col gap-2">
+        {/* الكرت الثاني: السرعة الفائقة والتحضير بدون إنترنت */}
+        <div className="bg-gradient-to-br from-emerald-50 to-white dark:from-slate-900 dark:to-slate-950 p-6 rounded-2xl border border-emerald-100 dark:border-slate-800 shadow-sm flex flex-col gap-3">
           <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-black text-sm">
-            <Database size={18} /> كاش فحص الفتح الاستباقي (ميزة الكاش الجديدة)
-            💾
+            <Database size={18} /> السرعة اللحظية والتحضير الآمن عند انقطاع الإنترنت 💾
           </div>
-          <p className="text-xs leading-5 text-slate-600 dark:text-slate-300">
-            لتسريع العمليات ومنع تعليق الاسكانر، تقوم الواجهة **بالتحقق من الكاش
-            المحلي أولاً** قبل إرسال طلب تفعيل المجموعة للسيرفر؛ فإذا كانت الحصة
-            مفتوحة مسبقاً، تعبر الواجهة فوراً لصفحة السكان وتجلب الطلاب المقيدين
-            محلياً بشكل فوري لتفادي شلل النظام أو إجهاد قاعدة البيانات بطلبات
-            مكررة.
+          <p className="text-xs leading-5 text-slate-600 dark:text-slate-300 text-justify">
+            تم تصميم هذه الميزة لتضمن للمساعدين سرعة مسح فائقة وتمنع تعليق شاشة
+            الاسكانر نهائياً؛ فالواجهة تقرأ بيانات الحصة المفتوحة من الذاكرة اللحظية
+            لجهازك فوراً لتفادي الضغط على الشبكة. وفي حال انقطاع الإنترنت فجأة داخل
+            السنتر، <strong>لن يتوقف العمل نهائياً!</strong> يمكنك الاستمرار في مسح
+            كروت الطلاب وتوثيق حضورهم بشكل طبيعي، حيث تُحفظ البيانات مشفرة داخل ذاكرة
+            المتصفح مؤقتاً.
+            <span className="block mt-2 font-bold text-amber-600 dark:text-amber-400">
+              ⚠️ تنبيه هام للسكرتارية: فور عودة شبكة الإنترنت، يجب فتح هذه الصفحة من
+              "نفس الجهاز" الذي استخدمتموه في المسح، ليقوم النظام تلقائياً برفع وتزامن
+              كافة سجلات الحضور المحفوظة إلى السيرفر الرئيسي بنجاح.
+            </span>
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-50 to-white dark:from-slate-900 dark:to-slate-950 p-5 rounded-2xl border border-purple-100 dark:border-slate-800 shadow-sm flex flex-col gap-2">
+        {/* الكرت الثالث: منع التكرار، حساب التأخير، ورسائل الواتساب الفورية */}
+        <div className="bg-gradient-to-br from-purple-50 to-white dark:from-slate-900 dark:to-slate-950 p-6 rounded-2xl border border-purple-100 dark:border-slate-800 shadow-sm flex flex-col gap-3">
           <div className="flex items-center gap-2 text-purple-700 dark:text-purple-400 font-black text-sm">
-            <CheckSquare size={18} /> حماية التكرار وإشعارات الواتساب الآلية 🛡️
+            <CheckSquare size={18} /> حماية التكرار، حساب قواعد التأخير، ورسائل WhatsApp 🛡️
           </div>
-          <p className="text-xs leading-5 text-slate-600 dark:text-slate-300">
-            تمنع المنظومة مسح كارت الطالب أكثر من مرة في نفس المجموعة لليوم لمنع
-            التلاعب بالأرقام؛ مع تفعيل نظام احتساب التأخير التلقائي بعد مرور 10
-            دقائق من الموعد، وتوليد إرسال فوري لرسائل الغياب المفصلة لأولياء
-            الأمور مباشرة عبر تطبيق WhatsApp فور إقفال الحصة.
+          <p className="text-xs leading-5 text-slate-600 dark:text-slate-300 text-justify">
+            نظام أمان صارم يمنع الأخطاء البشرية؛ حيث يحظر النظام مسح كارت الطالب أكثر
+            من مرة واحدة في نفس المجموعة لليوم لمنع تكرار البيانات أو التلاعب بها. كما
+            يقوم النظام باحتساب التأخير آلياً بدقة متناهية:{" "}
+            <strong>إذا مرت 10 دقائق كاملة على موعد بدء الحصة الفعلي</strong> ودخل
+            الطالب بعدها، يتم إدراج حالته تلقائياً كـ (متأخر) مع حساب الدقائق بدقة.
+            والأهم من ذلك، <strong>بمجرد قيام السكرتارية بإغلاق وإنهاء الحصة</strong>{" "}
+            من لوحة التحكم، يقوم النظام فوراً وبشكل آلي بتوليد وإرسال رسائل الغياب
+            والتأخير المفصلة إلى هواتف أولياء الأمور عبر تطبيق <strong>WhatsApp</strong>{" "}
+            لإحاطتهم بمستوى انضباط أبنائهم أولاً بأول.
           </p>
         </div>
       </div>

@@ -322,82 +322,143 @@ const ReferralIntroModal = ({ isOpen, onClose, referralCode }: { isOpen: boolean
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 overflow-y-auto">
+          {/* الخلفية المضببة المحسنة */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-slate-950/70 backdrop-blur-xl"
+            className="absolute inset-0 bg-slate-950/80 backdrop-blur-md"
           />
+          
+          {/* جسم المودال المتجاوب بالكامل مع الهواتف */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 30 }}
-            className="bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 w-full max-w-lg rounded-[3.5rem] shadow-[0_35px_90px_rgba(0,0,0,0.5)] relative z-10 overflow-hidden border border-slate-200 dark:border-white/10 p-8 text-center"
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 w-full max-w-md rounded-3xl sm:rounded-[2.5rem] shadow-[0_25px_70px_rgba(0,0,0,0.4)] relative z-10 overflow-hidden border border-slate-200 dark:border-white/10 p-5 sm:p-7 text-center my-auto"
             dir="rtl"
           >
-            <div className="absolute top-0 right-0 left-0 h-2 bg-gradient-to-r from-amber-500 via-primary-500 to-indigo-500" />
-            <div className="absolute -right-16 -top-16 w-36 h-36 bg-primary-500/10 rounded-full blur-2xl" />
+            {/* اللمسات الجمالية العلوية */}
+            <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-amber-500 via-indigo-500 to-emerald-500" />
+            <div className="absolute -right-12 -top-12 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
             
-            <div className="mx-auto w-20 h-20 bg-gradient-to-tr from-amber-400 to-primary-600 rounded-[2rem] flex items-center justify-center text-white shadow-xl shadow-primary-500/20 mb-6 relative">
-              <Gift size={36} className="animate-pulse" />
-              <div className="absolute -bottom-1 -left-1 bg-white dark:bg-slate-900 p-1.5 rounded-full shadow border border-slate-100 dark:border-slate-800">
-                <Sparkles size={16} className="text-amber-500" />
+            {/* أيقونة الهدية الاحترافية بحركة نابضة */}
+            <div className="mx-auto w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-tr from-amber-400 via-orange-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 mb-3.5 relative">
+              <Gift size={28} className="animate-bounce" style={{ animationDuration: '3s' }} />
+              <div className="absolute -bottom-1 -left-1 bg-white dark:bg-slate-900 p-1 rounded-full shadow border border-slate-100 dark:border-slate-800">
+                <Sparkles size={12} className="text-amber-500" />
               </div>
             </div>
 
-            <h3 className="text-2xl font-black dark:text-white tracking-tight mb-3">نظام الإحالة والمكافآت الزمنية السخي! 🎁</h3>
-            <p className="text-slate-600 dark:text-slate-300 text-xs font-bold leading-relaxed max-w-md mx-auto mb-6">
-              مرحباً بك في أحدث أنظمة الأتمتة التوسعية للـ SaaS. الآن يمكنك كسب فترات اشتراك مجانية كاملة وممتدة هندسياً بكل سهولة!
+            {/* نصوص تسويقية محفزة وواضحة */}
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight mb-2">
+              شارك النجاح واكسب شهوراً مجانية! 🚀
+            </h3>
+            <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm font-medium leading-relaxed max-w-sm mx-auto mb-4">
+              لا تدير سنترك بمفردك، دعنا نتوسع معاً! أرسل كود الإحالة لأصدقائك من أصحاب المراكز التعليمية، لتمنحهم خصماً حصرياً وتفتح لنفسك رصيد اشتراك مجاني لا ينتهي.
             </p>
 
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-100 dark:border-slate-800 text-right space-y-3 shadow-inner mb-6">
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">١</div>
-                <p className="text-xs font-bold text-slate-700 dark:text-slate-300 leading-normal">
-                  ستجد كود الإحالة الخاص بك دائماً في <span className="text-primary-600 font-black">صفحة الإعدادات بالأسفل تماماً بجانب زر تسجيل الخروج</span>.
+            {/* تفاصيل الشروط مصاغة بذكاء واحترافية لقراءتها بسهولة على الموبايل */}
+            <div className="bg-slate-50 dark:bg-slate-900/60 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800/80 text-right space-y-3 shadow-inner text-xs mb-4">
+              <div className="flex items-start gap-2.5">
+                <div className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-[11px] font-bold shrink-0 mt-0.5">١</div>
+                <p className="text-slate-700 dark:text-slate-300 font-semibold leading-relaxed">
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">مكسب متبادل وفوري:</span> لكل سنتر جديد ينضم عن طريقك، ستحصل أنت على <span className="underline decoration-emerald-500/40 font-bold">شهر كامل مجاناً (30 يوماً رصيد)</span>، ويحصل السنتر الجديد على <span className="text-indigo-500 dark:text-indigo-400 font-bold">خصم 20% ممتد لأول شهرين</span> من رحلته معنا.
                 </p>
               </div>
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary-500/10 text-primary-600 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">٢</div>
-                <p className="text-xs font-bold text-slate-700 dark:text-slate-300 leading-normal">
-                  عند مشاركة الكود مع سنتر آخر، ويقوم باستخدامه أثناء إنشاء حسابه الجديد، ستحصل أنت فوراً على <span className="text-emerald-500 font-black">شهر كامل مجاناً (30 يوماً إضافية)</span> مضافاً لصلاحية السنتر الخاص بك.
+
+              <div className="flex items-start gap-2.5">
+                <div className="w-5 h-5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-[11px] font-bold shrink-0 mt-0.5">٢</div>
+                <p className="text-slate-700 dark:text-slate-300 font-semibold leading-relaxed">
+                  <span className="text-amber-600 dark:text-amber-400 font-bold">شرط تفعيل الهدية:</span> تضاف الشهور المجانية تلقائياً إلى حسابك فور قيام السنتر المُحال بالاشتراك الفعلي في <span className="border-b border-dashed border-amber-500 font-bold text-amber-600 dark:text-amber-400">إحدى الباقات المدفوعة</span> بعد انتهاء فترته التجريبية.
                 </p>
               </div>
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">٣</div>
-                <p className="text-xs font-bold text-slate-700 dark:text-slate-300 leading-normal">
-                  السنتر الجديد المستقطب سيحصل تلقائياً على خصم سيادي قدره <span className="text-amber-500 font-black">20% على أول شهرين</span> من اشتراكه بالنظام!
+
+              <div className="flex items-start gap-2.5">
+                <div className="w-5 h-5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-[11px] font-bold shrink-0 mt-0.5">٣</div>
+                <p className="text-slate-700 dark:text-slate-300 font-semibold leading-relaxed">
+                  <span className="text-indigo-600 dark:text-indigo-400 font-bold">آلية التوفير الذكي والتجديد:</span> رصيدك محفوظ! عند نهاية اشتراكك، إذا اخترت تجديداً شهرياً وكان لديك رصيد، تصبح قيمة اشتراكك <span className="text-emerald-600 dark:text-emerald-400 font-bold">0 جنيه تماماً</span>. أما إذا اخترت خطة سنوية، فسيتم <span className="text-indigo-500 dark:text-indigo-400 font-bold">خصم القيمة النقدية المقابلة لشهورك المجانية</span> من السعر الإجمالي فوراً!
                 </p>
               </div>
             </div>
 
+            {/* صندوق كود الإحالة والنسخ المتجاوب */}
             {referralCode && (
-              <div className="mb-8 bg-slate-100 dark:bg-slate-800/60 rounded-2xl p-3.5 flex items-center justify-between border border-slate-200 dark:border-slate-700 gap-4">
-                <div className="text-right">
-                  <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">رمز الإحالة الحالي الخاص بك</span>
-                  <span className="text-sm font-black text-slate-800 dark:text-white select-all font-mono tracking-wider">{referralCode}</span>
+              <div className="mb-4 bg-slate-100 dark:bg-slate-800/40 rounded-xl p-2.5 flex items-center justify-between border border-slate-200 dark:border-slate-800 gap-2">
+                <div className="text-right pr-1">
+                  <span className="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">كود الإحالة الحصري الخاص بك</span>
+                  <span className="text-sm font-black text-slate-800 dark:text-white select-all font-mono tracking-wide">{referralCode}</span>
                 </div>
                 <button
                   onClick={handleCopy}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 active:scale-95 shadow-sm ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center gap-1.5 active:scale-95 shrink-0 ${
                     copied 
-                      ? 'bg-emerald-500 text-white' 
-                      : 'bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white hover:bg-slate-50'
+                      ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/20' 
+                      : 'bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-600'
                   }`}
                 >
-                  {copied ? <Check size={14} /> : <Copy size={14} />}
-                  {copied ? 'تم النسخ!' : 'نسخ الكود'}
+                  {copied ? <Check size={13} /> : <Copy size={13} />}
+                  <span>{copied ? 'تم النسخ!' : 'نسخ الكود'}</span>
                 </button>
               </div>
             )}
 
+            {/* 🔄 خط التشغيل الهيكلي للسنتر: متجاوب 100% (شبكة على الموبايل، وخط أفقي على الشاشات الأكبر) */}
+            <div className="mb-5 border-t border-slate-200/60 dark:border-slate-800/80 pt-3.5 text-right">
+              <span className="block text-[11px] font-bold text-slate-400 dark:text-slate-500 mb-2 items-center gap-1.5">
+                <AlertCircle size={13} className="text-amber-500" /> الترتيب الهيكلي الصحيح لتشغيل السنتر بنجاح:
+              </span>
+              
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:justify-between bg-slate-100/50 dark:bg-slate-900/30 p-2 rounded-xl border border-slate-200/40 dark:border-slate-800/40">
+                {/* 1. القاعات */}
+                <div className="flex flex-col items-center justify-center p-1.5 bg-white dark:bg-slate-900/60 sm:bg-transparent sm:dark:bg-transparent rounded-lg flex-1 text-center">
+                  <div className="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center shadow-sm mb-1">
+                    <Activity size={14} />
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">1. القاعات والغرف</span>
+                </div>
+
+                <div className="hidden sm:block text-slate-400 text-xs font-bold shrink-0">←</div>
+
+                {/* 2. المدرسين */}
+                <div className="flex flex-col items-center justify-center p-1.5 bg-white dark:bg-slate-900/60 sm:bg-transparent sm:dark:bg-transparent rounded-lg flex-1 text-center">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center shadow-sm mb-1">
+                    <BookOpen size={14} />
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">2. المدرسين والمواد</span>
+                </div>
+
+                <div className="hidden sm:block text-slate-400 text-xs font-bold shrink-0">←</div>
+
+                {/* 3. الحصص */}
+                <div className="flex flex-col items-center justify-center p-1.5 bg-white dark:bg-slate-900/60 sm:bg-transparent sm:dark:bg-transparent rounded-lg flex-1 text-center">
+                  <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center shadow-sm mb-1">
+                    <CalendarClock size={14} />
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">3. الحصص والمجموعات</span>
+                </div>
+
+                <div className="hidden sm:block text-slate-400 text-xs font-bold shrink-0">←</div>
+
+                {/* 4. الطلاب */}
+                <div className="flex flex-col items-center justify-center p-1.5 bg-white dark:bg-slate-900/60 sm:bg-transparent sm:dark:bg-transparent rounded-lg flex-1 text-center">
+                  <div className="w-7 h-7 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center shadow-sm mb-1">
+                    <Users size={14} />
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">4. إضافة الطلاب</span>
+                </div>
+              </div>
+            </div>
+
+            {/* زر الاستكمال والإغلاق الاحترافي والتسويقي */}
             <button
               onClick={onClose}
-              className="w-full py-4 bg-slate-950 dark:bg-white text-white dark:text-slate-950 rounded-2xl font-black text-xs shadow-xl transition-all active:scale-95 hover:opacity-90"
+              className="w-full py-3.5 bg-gradient-to-r from-slate-950 to-slate-850 dark:from-white dark:to-slate-100 text-white dark:text-slate-950 rounded-xl font-black text-xs sm:text-sm shadow-xl shadow-indigo-950/10 dark:shadow-white/5 transition-all duration-200 active:scale-[0.98] hover:opacity-95 flex items-center justify-center gap-2 group border border-transparent dark:border-slate-200"
             >
-              استكشاف لوحة التحكم الآن
+              <span>ابدأ رحلة التميز واستكشف لوحتك الآن</span>
+              <Sparkles size={14} className="text-amber-400 dark:text-amber-500 animate-pulse group-hover:rotate-12 transition-transform" />
             </button>
           </motion.div>
         </div>
