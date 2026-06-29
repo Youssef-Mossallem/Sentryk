@@ -602,7 +602,7 @@ export default function WhatsAppWallet() {
 
                                 <button
                                     type="button"
-                                    disabled={isPaying || messagesToCharge < 50}
+                                    disabled={isPaying || messagesToCharge < 250}
                                     onClick={handleCharge}
                                     className="w-full py-4 bg-slate-900 dark:bg-emerald-600 text-white rounded-xl font-black text-sm hover:opacity-95 transition-all flex items-center justify-center gap-2 disabled:opacity-30 shadow-lg shadow-slate-900/10 dark:shadow-none"
                                 >
@@ -619,9 +619,9 @@ export default function WhatsAppWallet() {
                                     )}
                                 </button>
                                 
-                                {messagesToCharge < 50 && (
+                                {messagesToCharge < 250 && (
                                     <p className="text-[10px] text-center text-rose-500 font-bold animate-pulse">
-                                        ⚠️ الحد الأدنى المسموح به لإنشاء حركة تمويل للمحفظة بالسيرفر هو 50 رسالة.
+                                        ⚠️ الحد الأدنى المسموح به لإنشاء حركة تمويل للمحفظة بالسيرفر هو 250 رسالة.
                                     </p>
                                 )}
                             </div>
