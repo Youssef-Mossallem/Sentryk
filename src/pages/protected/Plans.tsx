@@ -136,6 +136,11 @@ export default function Plans() {
     setActivePromo(null);
   }, [isYearly, selectedPlan]);
 
+  // تصفية الباقات: إخفاء الباقة التجريبية تماماً إذا تم استخدامها مسبقاً
+  const visiblePlans = useMemo(() => {
+    return PLAN_TIERS.filter(plan => !(plan.key === "TRIAL" && center?.trialUsed));
+  }, [center?.trialUsed]);
+
   /**
    * محرك الحسابات المالي والخصومات الديناميكي الفوري
    * يحاكي منطق الباك إند بالملي للتأكد من حساب الفاتورة الصفرية بدقة متناهية قبل الإرسال
@@ -279,9 +284,9 @@ export default function Plans() {
         if (response.data?.success) {
           if (setCenter) {
             const targetLimits = PLAN_TIERS.find(p => p.key === "TRIAL");
-            setCenter({ 
-              ...center, 
-              plan: "TRIAL", 
+            setCenter({
+              ...center,
+              plan: "TRIAL",
               trialUsed: true,
               isActive: true,
               maxStudents: targetLimits?.maxStudents || 100,
@@ -289,8 +294,8 @@ export default function Plans() {
             });
           }
           setUiSuccess(response.data?.message || "تم تفعيل الفترة التجريبية بنجاح، جاري توجيهكم...");
-          setSelectedPlan(null); 
-        setTimeout(() => { window.location.href = '/dashboard'; }, 800);
+          setSelectedPlan(null);
+          setTimeout(() => { window.location.href = '/dashboard'; }, 800);
         }
       } catch (err: any) {
         setUiError(err?.response?.data?.error || "تعذر تفعيل الفترة التجريبية حالياً.");
@@ -300,7 +305,7 @@ export default function Plans() {
       return;
     }
 
-    // [2] بناء أمر الفاتورة للباقات المدفوعة العادية
+    // [2] بناء أمر الفاتورة للباقات المدفوعة العادية (تشمل التجديد والترقية بحرية كاملة)
     setLoadingType('checkout');
     try {
       const response = await api.post('/payments/create', {
@@ -313,8 +318,8 @@ export default function Plans() {
       if (response.data?.success) {
         // 🔥 فحص التفرع الهيكلي الذكي للفواتير الصفرية (instantActivation / isFreeInstantActivation)
         if (response.data?.instantActivation || response.data?.isFreeInstantActivation) {
-          setUiSuccess(response.data?.message || "تم تفعيل الباقة مجاناً بنجاح من خلال رصيدكم المتاح! جاري التوجيه للداشبورد...");
-          
+          setUiSuccess(response.data?.message || "تم تفعيل الباقة بنجاح من خلال رصيدكم المتاح! جاري التوجيه للداشبورد...");
+
           if (setCenter) {
             const targetLimits = PLAN_TIERS.find(p => p.key === planKey);
             const nextFreeMonths = center.pendingFreeMonths > 0 ? Math.max(0, center.pendingFreeMonths - (isYearly ? Math.min(center.pendingFreeMonths, 12) : 1)) : 0;
@@ -330,7 +335,7 @@ export default function Plans() {
           }
 
           setSelectedPlan(null);
-         setTimeout(() => { window.location.href = '/dashboard'; }, 1000);
+          setTimeout(() => { window.location.href = '/dashboard'; }, 1000);
           return;
         }
 
@@ -372,7 +377,7 @@ export default function Plans() {
   return (
     <div className="min-h-screen bg-[#070a13] text-slate-100 font-sans py-16 px-4 sm:px-6 lg:px-8 overflow-x-hidden selection:bg-blue-600 selection:text-white" dir="rtl">
       <div className="max-w-7xl mx-auto relative z-10">
-        
+
         {/* ركائز ضوئية خلفية للتصميم الفاخر */}
         <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-b from-blue-600/10 via-purple-600/5 to-transparent rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute top-[40%] right-[-5%] w-96 h-96 bg-indigo-600/5 rounded-full blur-[140px] pointer-events-none" />
@@ -396,7 +401,7 @@ export default function Plans() {
             بنية إدارية مرنة تتكامل <br /> وتتلاءم مع حجم منشأتكم التعليمية
           </motion.h1>
 
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="mt-6 text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium"
@@ -454,9 +459,8 @@ export default function Plans() {
         </div>
 
         {/* شبكة استعراض فئات الاشتراكات بالأسعار الديناميكية المباشرة */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-24 items-stretch">
-          {PLAN_TIERS.map((plan, index) => {
-            const isTrialAndUsed = plan.key === "TRIAL" && center?.trialUsed;
+        <div className={`grid grid-cols-1 md:grid-cols-2 ${visiblePlans.length === 3 ? 'lg:grid-cols-3 max-w-5xl mx-auto' : 'lg:grid-cols-4'} gap-8 mb-24 items-stretch`}>
+          {visiblePlans.map((plan, index) => {
             const isCurrentPlan = center?.plan === plan.key;
 
             const priceCalculation = plan.key !== "TRIAL" ? calculatePlanPrice(plan.key, null) : null;
@@ -509,7 +513,7 @@ export default function Plans() {
                             ) : null}
                           </div>
                         )}
-                        
+
                         <div className="flex items-baseline gap-1">
                           <span className="text-4xl font-black text-white tracking-tight font-mono">
                             {priceCalculation?.final}
@@ -561,12 +565,10 @@ export default function Plans() {
                 <div>
                   <button
                     type="button"
-                    disabled={loadingType !== null || isTrialAndUsed || isCurrentPlan}
+                    disabled={loadingType !== null}
                     onClick={() => setSelectedPlan(plan.key)}
                     className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm tracking-wide transition-all duration-200 transform active:scale-95 flex items-center justify-center gap-2 ${isCurrentPlan
-                      ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 cursor-default'
-                      : isTrialAndUsed
-                        ? 'bg-slate-900/60 border border-slate-800 text-slate-600 cursor-not-allowed'
+                        ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white shadow-xl shadow-emerald-500/10'
                         : plan.popular
                           ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-95 text-slate-950 shadow-xl shadow-orange-500/10'
                           : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700/60'
@@ -575,10 +577,8 @@ export default function Plans() {
                     {isCurrentPlan ? (
                       <>
                         <Check size={16} />
-                        <span>الترخيص النشط حالياً للمركز</span>
+                        <span>تجديد / تمديد الاشتراك الحالي</span>
                       </>
-                    ) : isTrialAndUsed ? (
-                      <span>تم استنفاد المهلة التجريبية سابقاً</span>
                     ) : (
                       <>
                         <span>{plan.key === "TRIAL" ? "بدء فترة التقييم الفوري" : "اعتماد فئة الباقة وبدء التفعيل"}</span>
@@ -653,7 +653,7 @@ export default function Plans() {
               منظومة الحضور والانصراف بالـ QR المشفر ونوافذ التحقق التلقائية تضمن انسيابية فائقة للطلاب وتمنع التكدس تماماً أمام البوابات والقاعات التعليمية.
             </p>
           </div>
-          
+
           <div className="p-6 bg-slate-900/20 border border-slate-800 rounded-2xl backdrop-blur-sm">
             <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center mb-4">
               <MessageSquare size={22} />
@@ -705,7 +705,7 @@ export default function Plans() {
         <AnimatePresence>
           {selectedPlan && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              
+
               {/* واجهة الخلفية المعتمة */}
               <motion.div
                 initial={{ opacity: 0 }}
@@ -725,7 +725,7 @@ export default function Plans() {
               {(() => {
                 const currentInvoice = calculatePlanPrice(selectedPlan, activePromo);
                 const hasActiveBackendPromo = !!center?.activePromoCode;
-                
+
                 // حساب السعر قبل إدخال الكود الجديد للتأكد من حظره إذا كان السعر صفريًا مسبقًا
                 const priceBeforePromoInput = calculatePlanPrice(selectedPlan, null).final;
                 const isPromoDisabledDueToZeroPrice = priceBeforePromoInput === 0;
@@ -788,7 +788,7 @@ export default function Plans() {
                       {selectedPlan !== "TRIAL" && (
                         <div className="space-y-2">
                           <label className="block text-xs font-bold text-slate-300">هل تمتلك منشأتكم كود خصم ترويجي معتمد؟</label>
-                          
+
                           {isPromoDisabledDueToZeroPrice ? (
                             <div className="p-3.5 bg-slate-900 border border-slate-800 text-slate-400 rounded-xl flex items-start gap-2.5 text-xs font-bold">
                               <Lock size={16} className="shrink-0 text-slate-600 mt-0.5" />
@@ -800,8 +800,8 @@ export default function Plans() {
                             <div className="p-3.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-xl flex items-start gap-2.5 text-xs font-bold">
                               <Lock size={16} className="shrink-0 mt-0.5" />
                               <span>
-                                حظر دمج الأكواد: تملك منشأتكم كود خصم نشط ومستمر لعدة أشهر مسبقاً وهو 
-                                <span className="text-white bg-slate-950 px-1.5 py-0.5 rounded mx-1 font-mono font-black">{center.activePromoCode.code}</span> 
+                                حظر دمج الأكواد: تملك منشأتكم كود خصم نشط ومستمر لعدة أشهر مسبقاً وهو
+                                <span className="text-white bg-slate-950 px-1.5 py-0.5 rounded mx-1 font-mono font-black">{center.activePromoCode.code}</span>
                                 بنسبة (-{center.activePromoCode.discountPercent}%). لا يمكن كتابة أو تطبيق أكواد ترويجية إضافية تماشياً مع معايير الحوكمة المالية.
                               </span>
                             </div>
@@ -877,11 +877,13 @@ export default function Plans() {
                         ) : (
                           <>
                             <span>
-                              {selectedPlan === 'TRIAL' 
-                                ? 'تأكيد تفعيل فترة التقييم المجانية وبدء العمل' 
-                                : currentInvoice.final === 0 
-                                  ? 'تأكيد التفعيل المجاني الفوري والبث المباشر' 
-                                  : 'اعتماد بنود الفاتورة والانتقال الآمن لبوابة السداد'}
+                              {selectedPlan === 'TRIAL'
+                                ? 'تأكيد تفعيل فترة التقييم المجانية وبدء العمل'
+                                : currentInvoice.final === 0
+                                  ? 'تأكيد التفعيل المجاني الفوري والبث المباشر'
+                                  : selectedPlan === center?.plan
+                                    ? 'تأكيد تجديد الترخيص الحالي والانتقال الآمن لبوابة السداد'
+                                    : 'اعتماد بنود الفاتورة والانتقال الآمن لبوابة السداد'}
                             </span>
                             <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
                           </>
@@ -892,7 +894,7 @@ export default function Plans() {
                         <Lock size={11} className="text-slate-600" />
                         <span>
                           {selectedPlan === 'TRIAL' || currentInvoice.final === 0
-                            ? 'سيتم تفعيل كامل صلاحيات الباقة المختارة وحقن الحدود التشغيلية فوراً وتوجيهكم للداشبورد دون أي متطلبات مالية.' 
+                            ? 'سيتم تفعيل كامل صلاحيات الباقة المختارة وحقن الحدود التشغيلية فوراً وتوجيهكم للداشبورد دون أي متطلبات مالية.'
                             : 'معاملاتكم المالية مشفرة ومؤمنة بالكامل بالتعاون مع بوابة الدفع الإلكتروني المعتمدة من البنك المركزي المصري.'}
                         </span>
                       </p>
