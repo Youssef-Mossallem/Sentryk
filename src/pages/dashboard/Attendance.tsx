@@ -1126,20 +1126,28 @@ export default function AttendanceManager() {
     }
   };
 
-  const resetSession = async () => {
-    await stopScanner();
-    setSelectedSessionIds([]);
-    setScannedStudents(new Map());
-    setAbsentStudents([]);
-    setLastScanResult(null);
-    setSyncStatus("IDLE");
-    setStep("SELECT");
-    setSelectedStudentReport(null);
-    setCameraError("");
-    setFetchError("");
-    setLoadedSessionStudents([]);
-    setAttendanceQuickFilter("ALL");
-  };
+const resetSession = async () => {
+  await stopScanner();
+  setSelectedSessionIds([]);
+  setScannedStudents(new Map());
+  setAbsentStudents([]);
+  setLastScanResult(null);
+  setSyncStatus("IDLE");
+  
+  // 1. جلب البيانات فوراً من السيرفر لتحديث القائمة وحذف الحصص المغلقة
+  if (navigator.onLine) {
+    await loadInitialData(); 
+  }
+
+  // 2. الانتقال لشاشة الاختيار بعد التحديث
+  setStep("SELECT");
+  
+  setSelectedStudentReport(null);
+  setCameraError("");
+  setFetchError("");
+  setLoadedSessionStudents([]);
+  setAttendanceQuickFilter("ALL");
+};
 
   return (
     <div
