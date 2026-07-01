@@ -236,7 +236,7 @@ export default function Plans() {
     setUiSuccess('');
 
     try {
-      const response = await api.post('/promoCodes/validate', {
+      const response = await api.post('/promo-codes/validate', {
         code: promoInput,
         billingCycle: isYearly ? "YEARLY" : "MONTHLY"
       });
